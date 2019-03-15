@@ -1,9 +1,16 @@
 package rhttp // import "arp242.net/rhttp"
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"os"
+	"time"
 )
+
+// LogErrFunc gets called on errors.
+var LogErrFunc func(error) = func(err error) {
+	fmt.Fprintf(os.Stderr, "%s %s", time.Now().Format(time.RFC3339), err)
+}
 
 // HandlerFunc function.
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
@@ -19,7 +26,7 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 
 		// An actual error.
 		default:
-			log.Println(out)
+			LogErrFunc(out)
 			w.WriteHeader(500)
 			w.Write([]byte(out.Error()))
 		}
