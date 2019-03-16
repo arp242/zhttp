@@ -1,6 +1,8 @@
-package rhttp // import "arp242.net/rhttp"
+// Package rhttp
+package rhttp // import "arp242.net/postit/rhttp"
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,24 +14,51 @@ var LogErrFunc func(error) = func(err error) {
 	fmt.Fprintf(os.Stderr, "%s %s", time.Now().Format(time.RFC3339), err)
 }
 
+// Default is called when no known error matches.
+var Default = func(w http.ResponseWriter, err error) {
+	LogErrFunc(err)
+	w.WriteHeader(500)
+	w.Write([]byte(err.Error()))
+}
+
+var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, err error) {
+	w.WriteHeader(code)
+	w.Write([]byte("ERROR: "))
+	w.Write([]byte(err.Error()))
+}
+
 // HandlerFunc function.
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
+
+type coder interface {
+	Code() int
+	Error() string
+}
 
 // Wrap a http.HandlerFunc
 func Wrap(handler HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := handler(w, r)
-
-		switch out := err.(type) {
-		case nil:
-			// Do nothing.
-
-		// An actual error.
-		default:
-			LogErrFunc(out)
-			w.WriteHeader(500)
-			w.Write([]byte(out.Error()))
+		if err == nil {
+			return
 		}
+
+		// A github.com/teamwork/guru error with an embeded status code.
+		if stErr, ok := err.(coder); ok {
+			ErrPage(w, r, stErr.Code(), stErr)
+			return
+		}
+
+		switch err {
+		case sql.ErrNoRows:
+			ErrPage(w, r, 404, err)
+			return
+		}
+
+		// switch out := err.(type) {
+		// }
+
+		Default(w, err)
 	}
 }
 
