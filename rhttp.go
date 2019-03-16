@@ -3,23 +3,8 @@ package rhttp // import "arp242.net/postit/rhttp"
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
-	"os"
-	"time"
 )
-
-// LogErrFunc gets called on errors.
-var LogErrFunc func(error) = func(err error) {
-	fmt.Fprintf(os.Stderr, "%s %s", time.Now().Format(time.RFC3339), err)
-}
-
-// Default is called when no known error matches.
-var Default = func(w http.ResponseWriter, err error) {
-	LogErrFunc(err)
-	w.WriteHeader(500)
-	w.Write([]byte(err.Error()))
-}
 
 var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, err error) {
 	w.WriteHeader(code)
@@ -58,7 +43,7 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 		// switch out := err.(type) {
 		// }
 
-		Default(w, err)
+		ErrPage(w, r, 500, err)
 	}
 }
 
