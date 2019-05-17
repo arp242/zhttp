@@ -1,60 +1,39 @@
-rhttp is a Go package to make returning from HTTP handlers a bit easier.
+[![This project is considered experimental](https://img.shields.io/badge/Status-experimental-red.svg)](https://arp242.net/status/experimental)
+[![Build Status](https://travis-ci.org/Carpetsmoker/mhttp.svg?branch=master)](https://travis-ci.org/Carpetsmoker/mhttp)
+[![GoDoc](https://godoc.org/github.com/Carpetsmoker/mhttp?status.svg)](https://godoc.org/github.com/Carpetsmoker/mhttp)
 
-Here's a pretty standard endpoint to handle a form request:
+Martin's HTTP package. Contains various things I find useful and copy/pasted
+once too many times.
 
-	http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+<!--
+- `mhttp.Wrap()` – allow returning errors from HTTP endpoints:
 
-		var data Data
-		err := formam.Decode(r.Form, &data)
-		if err != nil {
-			http.Error(w, err.Error(), StatusInternalServerError)
-			return
-		}
+      http.HandleFunc("/bar", mhttp.Wrap(func(w http.ResponseWriter, r *http.Request) error {
+          d, err := getData()
+          if err != nil {
+              return err
+          }
 
-		d, err := getData()
-		if err != nil {
-			http.Error(w, err.Error(), StatusInternalServerError)
-			return
-		}
+          return mhttp.String("Hello, %s", d)
+      }))
 
-		_, _ = fmt.Fprintf(w, "Hello, %s", d)
-	})
+  It's just more convenient than `http.Error(...)` followed by a `return`.
 
-- fmt.Fprintf and w.Write() need "error check".
-- http.Error() takes only a string (losing other information), and still need
-  extra `return` line.
-- Many other cases of duplicated content, such as HTTP redirects, setting
-  Content-Type header, etc.
+  Return helpers:
 
-Enter `rhttp.Wrap()`:
+  - `mhttp.String()`
+  - `mhttp.Template()`
+  - `mhttp.SeeOther()`
 
-	http.HandleFunc("/bar", rhttp.Wrap(func(w http.ResponseWriter, r *http.Request) error {
-		r.ParseForm()
+- Middlewares:
 
-		var data Data
-		err := formam.Decode(r.Form, &data)
-		if err != nil {
-			return err
-		}
+  - `mtthp.Headers()` – Set HTTP headers on requests.
+  - `mhttp.Log()`     – Log requests, mostly intended for dev.
+  - `mhttp.Unpanic()` – Handle panics.
+  - `mhttp.Auth()`    – Authentication.
 
-		d, err := getData()
-		if err != nil {
-			return err
-		}
+- Template loading/reloading:
 
-		return rhttp.String("Hello, %s")
-	}))
+- Flash messages:
 
-
-The handler function signature is similar, except for the `error` return value.
-The r in rhttp is for "return".
-
-This is the same pattern as [echo](https://github.com/labstack/echo) uses, which
-I rather like. There are some other parts of echo I don't need/like, so I made a
-small library to support this.
-
-Supported packages:
-
-- http://github.com/teamwork/guru
-- http://github.com/pkg/errors
+-->

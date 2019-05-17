@@ -1,12 +1,14 @@
-// Package rhttp
-package rhttp // import "arp242.net/postit/rhttp"
+// Package mhttp
+package mhttp // import "arp242.net/stentor/mhttp"
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 )
 
 var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, err error) {
+	fmt.Println("ErrPage", code, err)
 	w.WriteHeader(code)
 	w.Write([]byte("ERROR: "))
 	w.Write([]byte(err.Error()))
@@ -45,6 +47,16 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 
 		ErrPage(w, r, 500, err)
 	}
+}
+
+func String(w http.ResponseWriter, s string) error {
+	w.Write([]byte(s))
+	w.WriteHeader(303)
+	return nil
+}
+
+func Template(w http.ResponseWriter, name string, data interface{}) error {
+	return tpl.ExecuteTemplate(w, name, data)
 }
 
 // SeeOther redirects to the given URL.
