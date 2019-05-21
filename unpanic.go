@@ -17,6 +17,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 					return
 				}
 
+				// TODO: filter stack
 				msg := fmt.Sprintf("Panic: %+v\n\n%s", rec, debug.Stack())
 				fmt.Fprintf(os.Stderr, msg)
 

@@ -3,6 +3,7 @@ package mhttp // import "arp242.net/stentor/mhttp"
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -51,7 +52,18 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 
 func String(w http.ResponseWriter, s string) error {
 	w.Write([]byte(s))
-	w.WriteHeader(303)
+	w.WriteHeader(200)
+	return nil
+}
+
+func JSON(w http.ResponseWriter, i interface{}) error {
+	j, err := json.Marshal(i)
+	if err != nil {
+		return err
+	}
+
+	w.Write(j)
+	w.WriteHeader(200)
 	return nil
 }
 
