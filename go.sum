@@ -1,5 +1,3 @@
-arp242.net/log v0.0.0-20190517061419-a76af4d22626 h1:gshJTdcLcfdCsMCDP8fPVPTTs41avQMqEVUFsMv+3pQ=
-arp242.net/log v0.0.0-20190517061419-a76af4d22626/go.mod h1:5Q8rfdsSv6aS514Ww0qrCPzlpB0J56hti2qKhIGf77A=
 github.com/go-chi/chi v4.0.2+incompatible h1:maB6vn6FqCxrpz4FqWdh4+lwpyZIQS7YEAUcHlgXVRs=
 github.com/go-chi/chi v4.0.2+incompatible/go.mod h1:eB3wogJHnLi3x/kFX2A+IbTBlXxmMeXJVKy9tTv1XzQ=
 github.com/monoculum/formam v0.0.0-20190307031628-bc555adff0cd h1:IXT4e1P5FWjF2zZa45blCFdkaNy2OXKTEUSjUK96/DA=
@@ -8,7 +6,9 @@ github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f h1:kwbmkbKXi5nf1FjBe7zLEey6yfPvsck7Xuc0/9z76Sc=
 github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f/go.mod h1:1DW23kFX0aXn1kRSuQAY+Byk74h1kZHvhJL72qBUrfU=
+github.com/teamwork/test v0.0.0-20190410143529-8897d82f8d46 h1:IWmLWZ3AylHoq1M8ca7H5Ns7oNsuzaCAqoFvKaDP2jA=
+github.com/teamwork/test v0.0.0-20190410143529-8897d82f8d46/go.mod h1:TIbx7tx6WHBjQeLRM4eWQZBL7kmBZ7/KI4x4v7Y5YmA=
 github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c h1:5/hkqtufOyLP25taIlo7BX9kLhw21unfjjdrOlwvFJk=
 github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c/go.mod h1:rmPaJUVv426LGg3QR31m1N0bfpCdCVyh3dCWsJTQeDA=
-zgo.at/log v0.0.0-20190522102336-9971bd327f57 h1:wyp/VNCj2yjcT+WnkYarc3C2jBqbnobUWRfnbVDfI3g=
-zgo.at/log v0.0.0-20190522102336-9971bd327f57/go.mod h1:8TES+e2aloLwEWXXrJp0NHrWBulY3d8jeAcfBVgGWlg=
+zgo.at/zlog v0.0.0-20190522152656-402fd1a39117 h1:ulofMHznjXIOCwuspo2JatLLmR6ZDwNE59RCkZldmwA=
+zgo.at/zlog v0.0.0-20190522152656-402fd1a39117/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=

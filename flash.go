@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"zgo.at/log"
+	"zgo.at/zlog"
 )
 
 var cookieFlash = "flash"
@@ -29,7 +29,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) template.HTML {
 
 	b, err := base64.StdEncoding.DecodeString(c.Value)
 	if err != nil {
-		log.Error(err)
+		zlog.Error(err)
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name: cookieFlash, Value: "", Path: "/",

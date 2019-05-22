@@ -1,11 +1,9 @@
 package zhttp
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
-	"net/http"
 	"sync"
 )
 
@@ -62,20 +60,4 @@ func ReloadTpl() {
 		log.Print(err)
 	}
 	tpl.set(t)
-}
-
-// TODO: if renderErr errors out it calls itself.
-func TplErr(w http.ResponseWriter, r *http.Request, code int, reported error) {
-	fmt.Println("renderErr", code, reported)
-	w.WriteHeader(code)
-	fmt.Fprintf(w, "Error %d: %s\n", code, reported)
-
-	//err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
-	//	Globals Globals
-	//	Code    int
-	//	Error   string
-	//}{newGlobals(w, r), code, reported.Error()})
-	//if err != nil {
-	//	log.Error(err)
-	//}
 }

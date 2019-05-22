@@ -3,15 +3,53 @@ package zhttp
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strings"
+
+	"zgo.at/zlog"
 )
 
-var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, err error) {
-	fmt.Println("ErrPage", code, err)
+// TODO: make it easy to hide errors on production.
+var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
+	if code >= 500 {
+		zlog.Error(reported)
+	}
+
 	w.WriteHeader(code)
-	w.Write([]byte("ERROR: "))
-	w.Write([]byte(err.Error()))
+
+	ct := strings.ToLower(r.Header.Get("Content-Type"))
+	switch {
+	case strings.HasPrefix(ct, "application/json"):
+		var (
+			j   []byte
+			err error
+		)
+		if jErr, ok := reported.(json.Marshaler); ok {
+			j, err = jErr.MarshalJSON()
+		} else {
+			j, err = json.Marshal(map[string]string{"error": reported.Error()})
+		}
+		if err != nil {
+			zlog.Error(err)
+		}
+		w.Write(j)
+
+	case ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/"):
+		fallthrough
+
+	default:
+		if tpl == nil {
+			return
+		}
+
+		err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
+			Code  int
+			Error string
+		}{code, reported.Error()})
+		if err != nil {
+			zlog.Error(err)
+		}
+	}
 }
 
 // HandlerFunc function.

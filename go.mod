@@ -7,5 +7,7 @@ require (
 	github.com/monoculum/formam v0.0.0-20190307031628-bc555adff0cd
 	github.com/pkg/errors v0.8.1
 	github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f
-	zgo.at/log v0.0.0-20190522102336-9971bd327f57
+	github.com/teamwork/test v0.0.0-20190410143529-8897d82f8d46
+	github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c
+	zgo.at/zlog v0.0.0-20190522152656-402fd1a39117
 )
