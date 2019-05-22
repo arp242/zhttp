@@ -7,6 +7,9 @@ import (
 	"sync"
 )
 
+// TplPath is the path to template files.
+var TplPath = "tpl/*.gohtml"
+
 // Add a lock to template.Template for reloading in dev without race
 // conditions.
 type lockedTpl struct {
@@ -55,7 +58,7 @@ func InitTpl(prod bool) {
 
 // ReloadTpl reloads the templates.
 func ReloadTpl() {
-	t, err := template.New("").Option("missingkey=error").Funcs(funcMap).ParseGlob("tpl/*.gohtml")
+	t, err := template.New("").Option("missingkey=error").Funcs(funcMap).ParseGlob(TplPath)
 	if err != nil {
 		log.Print(err)
 	}
