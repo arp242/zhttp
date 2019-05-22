@@ -1,5 +1,5 @@
 // Package ctxkey stores context keys.
-package ctxkey // import "arp242.net/mhttp/ctxkey"
+package ctxkey // import "zgo.at/zhttp/ctxkey"
 
 // Context keys.
 var (

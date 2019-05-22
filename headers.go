@@ -1,4 +1,4 @@
-package mhttp
+package zhttp
 
 import "net/http"
 

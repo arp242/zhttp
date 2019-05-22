@@ -1,4 +1,4 @@
-package mhttp
+package zhttp
 
 import (
 	"crypto/rand"
@@ -16,7 +16,7 @@ func Secret() string {
 	for i := 0; i < 4; i++ {
 		n, err := rand.Int(rand.Reader, max)
 		if err != nil {
-			panic(fmt.Errorf("mhttp.Secret: %s", err))
+			panic(fmt.Errorf("zhttp.Secret: %s", err))
 		}
 		_, _ = key.WriteString(strconv.FormatUint(n.Uint64(), 36))
 	}

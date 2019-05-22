@@ -1,5 +1,4 @@
-// Package mhttp
-package mhttp // import "arp242.net/stentor/mhttp"
+package zhttp
 
 import (
 	"database/sql"

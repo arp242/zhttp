@@ -10,3 +10,5 @@ github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f h1:kwbmkbKXi5nf1FjBe
 github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f/go.mod h1:1DW23kFX0aXn1kRSuQAY+Byk74h1kZHvhJL72qBUrfU=
 github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c h1:5/hkqtufOyLP25taIlo7BX9kLhw21unfjjdrOlwvFJk=
 github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c/go.mod h1:rmPaJUVv426LGg3QR31m1N0bfpCdCVyh3dCWsJTQeDA=
+zgo.at/log v0.0.0-20190522102336-9971bd327f57 h1:wyp/VNCj2yjcT+WnkYarc3C2jBqbnobUWRfnbVDfI3g=
+zgo.at/log v0.0.0-20190522102336-9971bd327f57/go.mod h1:8TES+e2aloLwEWXXrJp0NHrWBulY3d8jeAcfBVgGWlg=

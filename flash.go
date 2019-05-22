@@ -1,4 +1,4 @@
-package mhttp
+package zhttp
 
 import (
 	"encoding/base64"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"arp242.net/log"
+	"zgo.at/log"
 )
 
 var cookieFlash = "flash"
