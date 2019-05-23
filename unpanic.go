@@ -3,8 +3,8 @@ package zhttp
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"runtime/debug"
+
+	"zgo.at/zlog"
 )
 
 // TODO: https://github.com/Teamwork/middleware/blob/master/rescue/rescue.go
@@ -17,14 +17,18 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 					return
 				}
 
-				// TODO: filter stack
-				msg := fmt.Sprintf("Panic: %+v\n\n%s", rec, debug.Stack())
-				fmt.Fprintf(os.Stderr, msg)
-
-				if prod {
-					msg = "Oops :-("
+				err, ok := rec.(error)
+				if !ok {
+					err = fmt.Errorf("Panic: %+v", err)
 				}
-				http.Error(w, msg, http.StatusInternalServerError)
+
+				zlog.Error(err)
+
+				// TODO: filter stack
+				// if prod {
+				// 	msg = "Oops :-("
+				// }
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}()
 
 			next.ServeHTTP(w, r)
