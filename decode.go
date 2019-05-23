@@ -11,11 +11,12 @@ import (
 
 const (
 	ContentUnsupported uint8 = iota
+	ContentQuery
 	ContentForm
 	ContentJSON
 )
 
-// Decode a form or JSON parameters.
+// Decode request parameters from a form, JSON body, or query parameters.
 //
 // Returns one of the Content* constants, which is useful if you want to
 // alternate the responses.
@@ -29,18 +30,21 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		err error
 		c   uint8
 	)
-	switch ct {
-	case "application/json":
+	switch {
+	case r.Method == http.MethodGet:
+		c = ContentQuery
+		err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.URL.Query(), dst)
+	case ct == "application/json":
 		c = ContentJSON
 		err = json.NewDecoder(r.Body).Decode(dst)
-	case "application/x-www-form-urlencoded", "multipart/form-data":
+	case ct == "application/x-www-form-urlencoded" || ct == "multipart/form-data":
 		c = ContentForm
 		r.ParseForm()
 		err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
 	default:
 		c = ContentUnsupported
 		err = guru.Errorf(http.StatusUnsupportedMediaType,
-			"can only handle JSON and form requests, and not %q", ct)
+			"unable to handle Content-Type %q", ct)
 	}
 	return c, err
 }
