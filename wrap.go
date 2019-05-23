@@ -9,6 +9,16 @@ import (
 	"zgo.at/zlog"
 )
 
+type (
+	coder interface {
+		Code() int
+		Error() string
+	}
+	errorJSON interface {
+		ErrorJSON() ([]byte, error)
+	}
+)
+
 // TODO: make it easy to hide errors on production.
 var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
 	if code >= 500 {
@@ -26,6 +36,8 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 		)
 		if jErr, ok := reported.(json.Marshaler); ok {
 			j, err = jErr.MarshalJSON()
+		} else if jErr, ok := reported.(errorJSON); ok {
+			j, err = jErr.ErrorJSON()
 		} else {
 			j, err = json.Marshal(map[string]string{"error": reported.Error()})
 		}
@@ -54,11 +66,6 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 
 // HandlerFunc function.
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
-
-type coder interface {
-	Code() int
-	Error() string
-}
 
 // Wrap a http.HandlerFunc
 func Wrap(handler HandlerFunc) http.HandlerFunc {

@@ -3,38 +3,34 @@
 [![codecov](https://codecov.io/gh/zgoat/zhttp/branch/master/graph/badge.svg)](https://codecov.io/gh/zgoat/zhttp)
 [![GoDoc](https://godoc.org/github.com/zgoat/zhttp?status.svg)](https://godoc.org/github.com/zgoat/zhttp)
 
-Martin's HTTP package. Contains various things I find useful and copy/pasted
-once too many times.
+Martin's HTTP package: It's not a "framework", but just a collection of
+functions for building HTTP services.
 
-<!--
-- `zhttp.Wrap()` – allow returning errors from HTTP endpoints:
+Convention over configuration. Honestly, I'm not sure how useful this will be
+for other people at this stage (or ever).
 
-      http.HandleFunc("/bar", zhttp.Wrap(func(w http.ResponseWriter, r *http.Request) error {
-          d, err := getData()
-          if err != nil {
-              return err
-          }
+---
 
-          return zhttp.String("Hello, %s", d)
-      }))
+`zhttp.Wrap()` allows returning errors from HTTP endpoints:
 
-  It's just more convenient than `http.Error(...)` followed by a `return`.
+    http.HandleFunc("/bar", zhttp.Wrap(func(w http.ResponseWriter, r *http.Request) error {
+      d, err := getData()
+      if err != nil {
+          return err
+      }
 
-  Return helpers:
+      return zhttp.String("Hello, %s", d)
+    }))
 
-  - `zhttp.String()`
-  - `zhttp.Template()`
-  - `zhttp.SeeOther()`
+It's just more convenient than `http.Error(...)` followed by a `return`. The
+`ErrFunc()` will be used to report returned errors (you can override it if you
+need to).
 
-- Middlewares:
+Return helpers:
 
-  - `mtthp.Headers()` – Set HTTP headers on requests.
-  - `zhttp.Log()`     – Log requests, mostly intended for dev.
-  - `zhttp.Unpanic()` – Handle panics.
-  - `zhttp.Auth()`    – Authentication.
+- `zhttp.String()`
+- `zhttp.JSON()`
+- `zhttp.Template()`
+- `zhttp.SeeOther()`
 
-- Template loading/reloading:
-
-- Flash messages:
-
--->
+--

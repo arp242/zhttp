@@ -14,6 +14,11 @@ type jsonErr struct{}
 func (err jsonErr) Error() string                { return "JSON error" }
 func (err jsonErr) MarshalJSON() ([]byte, error) { return []byte("[1]"), nil }
 
+type errJSON struct{}
+
+func (err errJSON) Error() string              { return "JSON error 2" }
+func (err errJSON) ErrorJSON() ([]byte, error) { return []byte("[2]"), nil }
+
 func TestErrPage(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -37,11 +42,18 @@ func TestErrPage(t *testing.T) {
 			"<p>Error 505: oh noes</p>\n",
 		},
 		{
-			"json",
+			"json marshal",
 			500,
 			&jsonErr{},
 			`[1]`,
 			"<p>Error 500: JSON error</p>\n",
+		},
+		{
+			"json error",
+			500,
+			&errJSON{},
+			`[2]`,
+			"<p>Error 500: JSON error 2</p>\n",
 		},
 	}
 
