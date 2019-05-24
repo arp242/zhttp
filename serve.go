@@ -10,7 +10,7 @@ import (
 )
 
 // Serve a HTTP server with graceful shutdown.
-func Serve(server http.Server, wait func()) {
+func Serve(server *http.Server, wait func()) {
 	consClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)

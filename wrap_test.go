@@ -57,7 +57,7 @@ func TestErrPage(t *testing.T) {
 		},
 	}
 
-	InitTpl(false)
+	InitTpl(nil)
 	zlog.Config.Output = func(zlog.Log) {} // Don't care about logs; don't spam.
 
 	for _, tt := range tests {

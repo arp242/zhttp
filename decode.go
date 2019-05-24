@@ -39,8 +39,10 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		err = json.NewDecoder(r.Body).Decode(dst)
 	case ct == "application/x-www-form-urlencoded" || ct == "multipart/form-data":
 		c = ContentForm
-		r.ParseForm()
-		err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
+		err = r.ParseForm()
+		if err == nil {
+			err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
+		}
 	default:
 		c = ContentUnsupported
 		err = guru.Errorf(http.StatusUnsupportedMediaType,
