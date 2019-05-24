@@ -1,14 +1,16 @@
 package zhttp
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
+	"strings"
 	"sync"
 )
 
 // TplPath is the path to template files.
-var TplPath = "tpl/*.gohtml"
+var TplPath = "tpl"
 
 // Add a lock to template.Template for reloading in dev without race
 // conditions.
@@ -46,19 +48,28 @@ var (
 )
 
 // InitTpl sets up the templates.
-func InitTpl(prod bool) {
-	if prod {
-		// TODO
-		// 	tpl.set(packedTpl)
-		// 	return
+func InitTpl(pack map[string][]byte) {
+	if pack == nil {
+		ReloadTpl()
+		return
 	}
 
-	ReloadTpl()
+	t := NewTpl()
+	for k, v := range pack {
+		k = strings.Trim(strings.TrimPrefix(k, TplPath), "/")
+		fmt.Println(k)
+		t = template.Must(t.New(k).Parse(string(v)))
+	}
+	tpl.set(t)
+}
+
+func NewTpl() *template.Template {
+	return template.New("").Option("missingkey=error").Funcs(funcMap)
 }
 
 // ReloadTpl reloads the templates.
 func ReloadTpl() {
-	t, err := template.New("").Option("missingkey=error").Funcs(funcMap).ParseGlob(TplPath)
+	t, err := NewTpl().ParseGlob(TplPath + "/*.gohtml")
 	if err != nil {
 		log.Print(err)
 	}

@@ -52,14 +52,14 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 			if err != nil { // No cooke, no problem!
 				// Ensure there's a concrete type (rather than nil) as that makes templating easier.
 				u, _ := load(r.Context(), "")
-				fmt.Fprintf(os.Stderr, "zhttp.Auth: no cookie: %#v\n", u) // TODO: log
+				//fmt.Fprintf(os.Stderr, "zhttp.Auth: no cookie: %#v\n", u) // TODO: log
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
 			}
 
 			u, err := load(r.Context(), c.Value)
 			if errors.Cause(err) == sql.ErrNoRows { // Invalid token or whatever.
-				fmt.Fprintf(os.Stderr, "zhttp.Auth: no rows\n") // TODO: log
+				//fmt.Fprintf(os.Stderr, "zhttp.Auth: no rows\n") // TODO: log
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
 			}

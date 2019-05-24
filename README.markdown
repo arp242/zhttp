@@ -7,7 +7,7 @@ Martin's HTTP package: It's not a "framework", but just a collection of
 functions for building HTTP services.
 
 Convention over configuration. Honestly, I'm not sure how useful this will be
-for other people at this stage (or ever).
+for other people at this stage (or ever), but it's pretty useful for me.
 
 ---
 
@@ -33,4 +33,16 @@ Return helpers:
 - `zhttp.Template()`
 - `zhttp.SeeOther()`
 
---
+---
+
+`zhttp.Decode()`scans forms, JSON body, or URL query parameters in to a struct.
+It's just a convencience wrapper around formam.
+
+---
+
+`zhttp.HostRoute()` routes request to chi routers based on the Host header.
+
+---
+
+`zhttp.PackDir()`, `zhttp.NewStatic()`, and `zhttp.NewTpl()` make it easy to
+serve static files with reload on dev, and compiled in the binary on production.
