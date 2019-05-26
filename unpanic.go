@@ -19,7 +19,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 
 				err, ok := rec.(error)
 				if !ok {
-					err = fmt.Errorf("Panic: %+v", err)
+					err = fmt.Errorf("Panic: %+v", rec)
 				}
 
 				zlog.Error(err)
