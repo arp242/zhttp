@@ -1,7 +1,6 @@
 package zhttp
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -57,7 +56,6 @@ func InitTpl(pack map[string][]byte) {
 	t := NewTpl()
 	for k, v := range pack {
 		k = strings.Trim(strings.TrimPrefix(k, TplPath), "/")
-		fmt.Println(k)
 		t = template.Must(t.New(k).Parse(string(v)))
 	}
 	tpl.set(t)
