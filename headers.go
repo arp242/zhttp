@@ -1,17 +1,35 @@
 package zhttp
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func Headers(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
-		// TODO: Don't load gfonts, use proper cfg.Static, get rid of
-		// unsafe-inline
-		//w.Header().Set("Content-Security-Policy", "default-src localhost:8081; style-src localhost:8081 https://fonts.googleapis.com 'unsafe-inline'; font-src localhost:8081 https://fonts.gstatic.com;")
-		w.Header().Set("Strict-Transport-Security", "max-age=2592000")
-		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
+// DefaultHeaders will be set by default.
+var DefaultHeaders = http.Header{
+	"Strict-Transport-Security": []string{"max-age=2592000"},
+	"X-Frame-Options":           []string{"SAMEORIGIN"},
+	"X-Content-Type-Options":    []string{"nosniff"},
+}
 
-		next.ServeHTTP(w, r)
-	})
+// Headers sets the given headers.
+//
+// DefaultHeaders will always be set. Headers passed to this function overrides
+// them. Use a nil value to remove a header.
+func Headers(h http.Header) func(next http.Handler) http.Handler {
+	headers := DefaultHeaders
+	for k, v := range h {
+		headers[http.CanonicalHeaderKey(k)] = v
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for k, v := range headers {
+				for _, v2 := range v {
+					w.Header().Add(k, v2)
+				}
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }
