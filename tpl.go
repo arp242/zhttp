@@ -30,21 +30,7 @@ func (t *lockedTpl) ExecuteTemplate(wr io.Writer, name string, data interface{})
 	return t.t.ExecuteTemplate(wr, name, data)
 }
 
-var (
-	tpl = new(lockedTpl)
-
-	funcMap = template.FuncMap{
-		"unsafe": func(s string) template.HTML { return template.HTML(s) },
-		"checked": func(vals []int64, id int64) template.HTMLAttr {
-			for _, v := range vals {
-				if id == v {
-					return template.HTMLAttr(` checked="checked"`)
-				}
-			}
-			return ""
-		},
-	}
-)
+var tpl = new(lockedTpl)
 
 // InitTpl sets up the templates.
 func InitTpl(pack map[string][]byte) {
@@ -62,7 +48,7 @@ func InitTpl(pack map[string][]byte) {
 }
 
 func NewTpl() *template.Template {
-	return template.New("").Option("missingkey=error").Funcs(funcMap)
+	return template.New("").Option("missingkey=error").Funcs(FuncMap)
 }
 
 // ReloadTpl reloads the templates.
