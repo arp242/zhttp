@@ -22,7 +22,7 @@ type (
 // TODO: make it easy to hide errors on production.
 var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
 	if code >= 500 {
-		zlog.Error(reported)
+		zlog.Request(r).Error(reported)
 	}
 
 	w.WriteHeader(code)
@@ -42,7 +42,7 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 			j, err = json.Marshal(map[string]string{"error": reported.Error()})
 		}
 		if err != nil {
-			zlog.Error(err)
+			zlog.Request(r).Error(err)
 		}
 		w.Write(j)
 
@@ -59,7 +59,7 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 			Error string
 		}{code, reported.Error()})
 		if err != nil {
-			zlog.Error(err)
+			zlog.Request(r).Error(err)
 		}
 	}
 }

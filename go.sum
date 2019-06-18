@@ -1,3 +1,5 @@
+github.com/arp242/formam v0.0.0-20190618142809-3a50fc364ef2 h1:By6yYAAagNWxaNmHbtwdJsltP87v2JAW9DGpY4xs9NQ=
+github.com/arp242/formam v0.0.0-20190618142809-3a50fc364ef2/go.mod h1:JKa2av1XVkGjhxdLS59nDoXa2JpmIHpnURWNbzCtXtc=
 github.com/go-chi/chi v4.0.2+incompatible h1:maB6vn6FqCxrpz4FqWdh4+lwpyZIQS7YEAUcHlgXVRs=
 github.com/go-chi/chi v4.0.2+incompatible/go.mod h1:eB3wogJHnLi3x/kFX2A+IbTBlXxmMeXJVKy9tTv1XzQ=
 github.com/monoculum/formam v0.0.0-20190307031628-bc555adff0cd h1:IXT4e1P5FWjF2zZa45blCFdkaNy2OXKTEUSjUK96/DA=
@@ -12,3 +14,5 @@ github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c h1:5/hkqtufOyLP25ta
 github.com/teamwork/utils v0.0.0-20190114034940-d6a1f27ce92c/go.mod h1:rmPaJUVv426LGg3QR31m1N0bfpCdCVyh3dCWsJTQeDA=
 zgo.at/zlog v0.0.0-20190522152656-402fd1a39117 h1:ulofMHznjXIOCwuspo2JatLLmR6ZDwNE59RCkZldmwA=
 zgo.at/zlog v0.0.0-20190522152656-402fd1a39117/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
+zgo.at/zlog v0.0.0-20190618174655-2641de0fc4bf h1:1tXPOjeI9WP0JYw6k2SMPmPRQiDwwCeXA3vS0QjXPEU=
+zgo.at/zlog v0.0.0-20190618174655-2641de0fc4bf/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
