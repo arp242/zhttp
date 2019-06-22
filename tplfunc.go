@@ -3,6 +3,7 @@ package zhttp
 import (
 	"html/template"
 	"strconv"
+	"time"
 )
 
 // FuncMap contains all the template functions.
@@ -10,6 +11,56 @@ var FuncMap = template.FuncMap{
 	"unsafe":  Tunsafe,
 	"checked": Tchecked,
 	"nformat": Tnformat,
+	"tformat": Ttformat,
+	"mult":    Tmult,
+	"sum":     Tsum,
+	"div":     Tdiv,
+	"sub":     Tsub,
+	"if2":     Tif2,
+}
+
+// Tif2 returns yes if cond is true, and no otherwise.
+func Tif2(cond bool, yes, no interface{}) interface{} {
+	if cond {
+		return yes
+	}
+	return no
+}
+
+// Tsum sums all the given numbers.
+func Tsum(n, n2 int, n3 ...int) int {
+	r := n + n2
+	for i := range n3 {
+		r += n3[i]
+	}
+	return r
+}
+
+// Tsub substracts all the given numbers.
+func Tsub(n, n2 int, n3 ...int) int {
+	r := n - n2
+	for i := range n3 {
+		r -= n3[i]
+	}
+	return r
+}
+
+// Tmult multiplies all the given numbers.
+func Tmult(n, n2 int, n3 ...int) int {
+	r := n * n2
+	for i := range n3 {
+		r *= n3[i]
+	}
+	return r
+}
+
+// Tdiv divides all the given numbers.
+func Tdiv(n, n2 int, n3 ...int) int {
+	r := n / n2
+	for i := range n3 {
+		r /= n3[i]
+	}
+	return r
 }
 
 // Tunsafe converts a string to template.HTML, preventing any escaping.
@@ -53,4 +104,12 @@ func Tnformat(n int) string {
 		out[i], out[j] = out[j], out[i]
 	}
 	return string(out)
+}
+
+// Tdformat formats a time as the given format string.
+func Ttformat(t time.Time, fmt string) string {
+	if fmt == "" {
+		fmt = "2006-01-02"
+	}
+	return t.Format(fmt)
 }

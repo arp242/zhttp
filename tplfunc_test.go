@@ -26,3 +26,34 @@ func TestTnformat(t *testing.T) {
 		})
 	}
 }
+
+func TestArithmetic(t *testing.T) {
+	tests := []struct {
+		f    func(int, int, ...int) int
+		in   []int
+		want int
+	}{
+		{Tsum, []int{2, 1}, 3},
+		{Tsum, []int{2, 2, 1}, 5},
+		{Tsum, []int{2, 2, -4}, 0},
+
+		{Tsub, []int{2, 1}, 1},
+		{Tsub, []int{2, 2, 1}, -1},
+		{Tsub, []int{2, 2, -5}, 5},
+
+		{Tmult, []int{2, 2}, 4},
+		{Tmult, []int{2, 2, 2}, 8},
+
+		{Tdiv, []int{8, 2}, 4},
+		{Tdiv, []int{8, 2, 2}, 2},
+	}
+
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			out := tt.f(tt.in[0], tt.in[1], tt.in[2:]...)
+			if out != tt.want {
+				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.want)
+			}
+		})
+	}
+}
