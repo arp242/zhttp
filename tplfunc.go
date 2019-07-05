@@ -55,8 +55,8 @@ func Tmult(n, n2 int, n3 ...int) int {
 }
 
 // Tdiv divides all the given numbers.
-func Tdiv(n, n2 int, n3 ...int) int {
-	r := n / n2
+func Tdiv(n, n2 int, n3 ...float32) float32 {
+	r := float32(n) / float32(n2)
 	for i := range n3 {
 		r /= n3[i]
 	}

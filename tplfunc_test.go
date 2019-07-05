@@ -44,8 +44,8 @@ func TestArithmetic(t *testing.T) {
 		{Tmult, []int{2, 2}, 4},
 		{Tmult, []int{2, 2, 2}, 8},
 
-		{Tdiv, []int{8, 2}, 4},
-		{Tdiv, []int{8, 2, 2}, 2},
+		//{Tdiv, []int{8, 2}, 4},
+		//{Tdiv, []int{8, 2, 2}, 2},
 	}
 
 	for i, tt := range tests {
