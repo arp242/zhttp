@@ -3,20 +3,33 @@ package zhttp
 import (
 	"html/template"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // FuncMap contains all the template functions.
 var FuncMap = template.FuncMap{
-	"unsafe":  Tunsafe,
-	"checked": Tchecked,
-	"nformat": Tnformat,
-	"tformat": Ttformat,
-	"mult":    Tmult,
-	"sum":     Tsum,
-	"div":     Tdiv,
-	"sub":     Tsub,
-	"if2":     Tif2,
+	"unsafe":     Tunsafe,
+	"checked":    Tchecked,
+	"nformat":    Tnformat,
+	"tformat":    Ttformat,
+	"mult":       Tmult,
+	"sum":        Tsum,
+	"div":        Tdiv,
+	"sub":        Tsub,
+	"if2":        Tif2,
+	"has_prefix": ThasPrefix,
+	"has_suffix": ThasSuffix,
+}
+
+// ThasPrefix tests whether the string s begins with prefix.
+func ThasPrefix(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
+
+// ThasSuffix tests whether the string s ends with suffix.
+func ThasSuffix(s, suffix string) bool {
+	return strings.HasSuffix(s, suffix)
 }
 
 // Tif2 returns yes if cond is true, and no otherwise.
