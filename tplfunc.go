@@ -22,6 +22,25 @@ var FuncMap = template.FuncMap{
 	"has_prefix":   ThasPrefix,
 	"has_suffix":   ThasSuffix,
 	"option_value": ToptionValue,
+	"checkbox":     Tcheckbox,
+}
+
+// Tcheckbox adds a checkbox; if current is true then it's checked.
+//
+// It also adds a hidden input with the value "off" so that's sent to the server
+// when the checkbox isn't sent, which greatly simplifies backend handling.
+func Tcheckbox(current bool, name string) template.HTML {
+	if current {
+		return template.HTML(fmt.Sprintf(`
+			<input type="checkbox" name="%s" checked>
+			<input type="hidden"   name="%[1]s" value="off">
+		`, name))
+	}
+
+	return template.HTML(fmt.Sprintf(`
+		<input type="checkbox" name="%s">
+		<input type="hidden"   name="%[1]s" value="off">
+	`, name))
 }
 
 // ToptionValue inserts the value attribute, and selected attribute if the value
