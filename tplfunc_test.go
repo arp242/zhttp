@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"fmt"
+	"html/template"
 	"testing"
 )
 
@@ -53,6 +54,27 @@ func TestArithmetic(t *testing.T) {
 			out := tt.f(tt.in[0], tt.in[1], tt.in[2:]...)
 			if out != tt.want {
 				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.want)
+			}
+		})
+	}
+}
+
+func TestOptionValue(t *testing.T) {
+	tests := []struct {
+		current, value, want string
+	}{
+		{"a", "a", `value="a" selected`},
+		{"", "a", `value="a"`},
+		{"x", "a", `value="a"`},
+		{"a&'a", "a&'a", `value="a&amp;&#39;a" selected`},
+	}
+
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
+			out := ToptionValue(tt.current, tt.value)
+			want := template.HTMLAttr(tt.want)
+			if out != want {
+				t.Errorf("\nout:  %#v\nwant: %#v\n", out, want)
 			}
 		})
 	}

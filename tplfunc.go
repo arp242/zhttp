@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
@@ -9,17 +10,29 @@ import (
 
 // FuncMap contains all the template functions.
 var FuncMap = template.FuncMap{
-	"unsafe":     Tunsafe,
-	"checked":    Tchecked,
-	"nformat":    Tnformat,
-	"tformat":    Ttformat,
-	"mult":       Tmult,
-	"sum":        Tsum,
-	"div":        Tdiv,
-	"sub":        Tsub,
-	"if2":        Tif2,
-	"has_prefix": ThasPrefix,
-	"has_suffix": ThasSuffix,
+	"unsafe":       Tunsafe,
+	"checked":      Tchecked,
+	"nformat":      Tnformat,
+	"tformat":      Ttformat,
+	"mult":         Tmult,
+	"sum":          Tsum,
+	"div":          Tdiv,
+	"sub":          Tsub,
+	"if2":          Tif2,
+	"has_prefix":   ThasPrefix,
+	"has_suffix":   ThasSuffix,
+	"option_value": ToptionValue,
+}
+
+// ToptionValue inserts the value attribute, and selected attribute if the value
+// is the same as current.
+func ToptionValue(current, value string) template.HTMLAttr {
+	if value == current {
+		return template.HTMLAttr(fmt.Sprintf(`value="%s" selected`,
+			template.HTMLEscapeString(value)))
+	}
+	return template.HTMLAttr(fmt.Sprintf(`value="%s"`,
+		template.HTMLEscapeString(value)))
 }
 
 // ThasPrefix tests whether the string s begins with prefix.
