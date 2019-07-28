@@ -11,29 +11,45 @@ import (
 	"zgo.at/zlog"
 )
 
-var cookieFlash = "flash"
+// Level constants.
+const (
+	LevelInfo  = "i"
+	LevelError = "e"
+)
 
+const cookieFlash = "flash"
+
+// Flash sets a new flash message at the LevelInfo, overwriting any previous
+// messages (if any).
 func Flash(w http.ResponseWriter, msg string, v ...interface{}) {
-	http.SetCookie(w, &http.Cookie{
-		Name:    cookieFlash,
-		Value:   base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),
-		Path:    "/",
-		Expires: time.Now().Add(1 * time.Minute),
-	})
+	flash(w, LevelInfo, msg, v...)
 }
 
-func ReadFlash(w http.ResponseWriter, r *http.Request) template.HTML {
+// FlashError sets a new flash message at the LevelError, overwriting any
+// previous messages (if any).
+func FlashError(w http.ResponseWriter, msg string, v ...interface{}) {
+	flash(w, LevelError, msg, v...)
+}
+
+// FlashMessage is a displayed flash message.
+type FlashMessage struct {
+	Level   string
+	Message template.HTML
+}
+
+// ReadFlash reads any existing flash message, returning the severity level and
+// the message itself.
+func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 	c, err := r.Cookie(cookieFlash)
 	if err != nil || c.Value == "" {
-		// The value won't be read if we set the flash on the same
-		// request.
+		// The value won't be read if we set the flash on the same request.
 		c = readSetCookie(w)
 		if c == nil {
-			return ""
+			return nil
 		}
 	}
 
-	b, err := base64.StdEncoding.DecodeString(c.Value)
+	b, err := base64.StdEncoding.DecodeString(c.Value[1:])
 	if err != nil {
 		zlog.Request(r).Error(err)
 	}
@@ -41,7 +57,16 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) template.HTML {
 		Name: cookieFlash, Value: "", Path: "/",
 		Expires: time.Now().Add(-24 * time.Hour),
 	})
-	return template.HTML(b)
+	return &FlashMessage{string(c.Value[0]), template.HTML(b)}
+}
+
+func flash(w http.ResponseWriter, lvl, msg string, v ...interface{}) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    cookieFlash,
+		Value:   lvl + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),
+		Path:    "/",
+		Expires: time.Now().Add(1 * time.Minute),
+	})
 }
 
 func readSetCookie(w http.ResponseWriter) *http.Cookie {
