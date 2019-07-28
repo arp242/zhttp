@@ -11,6 +11,7 @@ import (
 // FuncMap contains all the template functions.
 var FuncMap = template.FuncMap{
 	"unsafe":       Tunsafe,
+	"unsafe_js":    TunsafeJS,
 	"checked":      Tchecked,
 	"nformat":      Tnformat,
 	"tformat":      Ttformat,
@@ -113,6 +114,13 @@ func Tdiv(n, n2 int, n3 ...float32) float32 {
 // Can be dangerous if used on untrusted input!
 func Tunsafe(s string) template.HTML {
 	return template.HTML(s)
+}
+
+// TunsafeJS converts a string to template.JS, preventing any escaping.
+//
+// Can be dangerous if used on untrusted input!
+func TunsafeJS(s string) template.JS {
+	return template.JS(s)
 }
 
 // Tchecked returns a 'checked="checked"' attribute if id is in vals.
