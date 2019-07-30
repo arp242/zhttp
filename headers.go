@@ -16,7 +16,10 @@ var DefaultHeaders = http.Header{
 // DefaultHeaders will always be set. Headers passed to this function overrides
 // them. Use a nil value to remove a header.
 func Headers(h http.Header) func(next http.Handler) http.Handler {
-	headers := DefaultHeaders
+	headers := make(http.Header)
+	for k, v := range DefaultHeaders {
+		headers[http.CanonicalHeaderKey(k)] = v
+	}
 	for k, v := range h {
 		headers[http.CanonicalHeaderKey(k)] = v
 	}
