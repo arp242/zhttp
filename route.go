@@ -24,10 +24,11 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		route, ok := routers[strings.ToLower(r.Host)]
+		host := strings.ToLower(r.Host)
+		route, ok := routers[host]
 		if !ok {
 			for k, v := range wildcards {
-				if strings.HasSuffix(r.Host, k) {
+				if strings.HasSuffix(host, k) {
 					route = v
 					ok = true
 					break
@@ -42,4 +43,24 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 
 		route.ServeHTTP(w, r)
 	}
+}
+
+// RedirectHost redirects all requests to the destination host.
+//
+// Mainly intended for redirecting "example.com" to "www.example.com", or vice
+// verse. The full URL is preserved, so "example.com/a?x is redirected to
+// www.example.com/a?x
+//
+// Only GET requests are redirected.
+func RedirectHost(dst string) chi.Router {
+	r := chi.NewRouter()
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query().Encode()
+		if len(q) > 0 {
+			q = "?" + q
+		}
+		w.Header().Set("Location", dst+r.URL.Path+q)
+		w.WriteHeader(301)
+	})
+	return r
 }
