@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"bytes"
 	"html/template"
 	"io"
 	"log"
@@ -58,4 +59,13 @@ func ReloadTpl() {
 		log.Print(err)
 	}
 	tpl.set(t)
+}
+
+// ExecuteTpl executes a named template.
+func ExecuteTpl(name string, data interface{}) ([]byte, error) {
+	w := new(bytes.Buffer)
+	tpl.RLock()
+	defer tpl.RUnlock()
+	err := tpl.t.ExecuteTemplate(w, name, data)
+	return w.Bytes(), err
 }
