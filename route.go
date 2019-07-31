@@ -37,7 +37,7 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 		}
 
 		if !ok {
-			http.Error(w, fmt.Sprintf("unknown domain: %q", r.Host), http.StatusNotFound)
+			ErrPage(w, r, 404, fmt.Errorf("unknown domain: %q", r.Host))
 			return
 		}
 

@@ -28,7 +28,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 				// if prod {
 				// 	msg = "Oops :-("
 				// }
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				ErrPage(w, r, 500, err)
 			}()
 
 			next.ServeHTTP(w, r)
