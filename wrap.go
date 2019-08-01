@@ -21,11 +21,11 @@ type (
 
 // TODO: make it easy to hide errors on production.
 var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
+	w.WriteHeader(code)
+
 	if code >= 500 {
 		zlog.Request(r).Error(reported)
 	}
-
-	w.WriteHeader(code)
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
 	switch {
@@ -95,8 +95,8 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 }
 
 func String(w http.ResponseWriter, s string) error {
-	w.Write([]byte(s))
 	w.WriteHeader(200)
+	w.Write([]byte(s))
 	return nil
 }
 
@@ -106,8 +106,8 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 		return err
 	}
 
-	w.Write(j)
 	w.WriteHeader(200)
+	w.Write(j)
 	return nil
 }
 

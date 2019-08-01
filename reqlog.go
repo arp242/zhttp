@@ -9,13 +9,22 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func Log(host bool, timeFmt string) func(http.Handler) http.Handler {
+func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Handler {
 	if timeFmt == "" {
 		timeFmt = "15:04:05 "
 	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if len(ignore) > 0 {
+				for _, i := range ignore {
+					if r.URL.Path == i {
+						next.ServeHTTP(w, r)
+						return
+					}
+				}
+			}
+
 			start := time.Now()
 
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
