@@ -94,6 +94,12 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func Bytes(w http.ResponseWriter, b []byte) error {
+	w.WriteHeader(200)
+	w.Write(b)
+	return nil
+}
+
 func String(w http.ResponseWriter, s string) error {
 	w.WriteHeader(200)
 	w.Write([]byte(s))
