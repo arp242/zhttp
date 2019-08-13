@@ -10,6 +10,7 @@ import (
 
 // FuncMap contains all the template functions.
 var FuncMap = template.FuncMap{
+	"deref_s":      TderefS,
 	"unsafe":       Tunsafe,
 	"unsafe_js":    TunsafeJS,
 	"checked":      Tchecked,
@@ -24,6 +25,14 @@ var FuncMap = template.FuncMap{
 	"has_suffix":   ThasSuffix,
 	"option_value": ToptionValue,
 	"checkbox":     Tcheckbox,
+}
+
+// TderefS dereferences a string pointer, returning "" if it's nil.
+func TderefS(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // Tcheckbox adds a checkbox; if current is true then it's checked.
