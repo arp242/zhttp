@@ -8,7 +8,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f
 	github.com/teamwork/test v0.0.0-20190410143529-8897d82f8d46
-	github.com/teamwork/utils v0.0.0-20190802180115-518a4b2aa845 // indirect
+	github.com/teamwork/utils v0.0.0-20190802180115-518a4b2aa845
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect
 	zgo.at/zlog v0.0.0-20190729101808-11a778095e52
 )

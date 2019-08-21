@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/teamwork/utils/netutil"
 
 	"zgo.at/zhttp/ctxkey"
 )
@@ -27,8 +28,9 @@ type User interface {
 	GetToken() string
 }
 
-func SetCookie(w http.ResponseWriter, val string) {
+func SetCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
+		Domain:  netutil.RemovePort(domain),
 		Name:    cookieKey,
 		Value:   val,
 		Path:    "/",
