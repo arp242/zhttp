@@ -19,10 +19,7 @@ var (
 	oneYear   = 24 * 365 * time.Hour
 )
 
-type (
-	filterFunc func(*http.Request) bool
-	loadFunc   func(ctx context.Context, email string) (User, error)
-)
+type loadFunc func(ctx context.Context, email string) (User, error)
 
 type User interface {
 	GetToken() string
@@ -103,15 +100,33 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 	}
 }
 
+type filterFunc func(http.ResponseWriter, *http.Request) error
+
+// Filter access to a resource.
+//
+// If the returning error is a github.com/teamwork/guru.coder and has a redirect
+// code, then the error value is used as a redirection.
 func Filter(f filterFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// TODO: redir to login page?
-			if !f(r) {
-				ErrPage(w, r, http.StatusForbidden, errors.New("need to log in"))
+			err := f(w, r)
+			if err == nil {
+				next.ServeHTTP(w, r)
 				return
 			}
-			next.ServeHTTP(w, r)
+
+			code := http.StatusForbidden
+			if cErr, ok := err.(coder); ok {
+				code = cErr.Code()
+			}
+
+			if code >= 300 && code <= 399 {
+				w.Header().Set("Location", err.Error())
+				w.WriteHeader(303)
+				return
+			}
+
+			ErrPage(w, r, code, err)
 		})
 	}
 }
