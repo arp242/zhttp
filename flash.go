@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -61,6 +62,11 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 }
 
 func flash(w http.ResponseWriter, lvl, msg string, v ...interface{}) {
+	if f := ReadFlash(w, &http.Request{}); f != nil {
+		fmt.Fprintf(os.Stderr, "double flash message while setting %q:\n\talready set: %q\n",
+			msg, f.Message)
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:    cookieFlash,
 		Value:   lvl + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),

@@ -22,3 +22,12 @@ func TestFlash(t *testing.T) {
 		t.Errorf("wrong level: %#v", out)
 	}
 }
+
+func TestFlashMulti(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+
+	Flash(rr, "first")
+	FlashError(rr, "second")
+	_ = r
+}
