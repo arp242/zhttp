@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/go-chi/chi v4.0.2+incompatible
-	github.com/monoculum/formam v0.0.0-20190730134247-0612307a4099
+	github.com/monoculum/formam v0.0.0-20190830100315-7ff9597b1407
 	github.com/pkg/errors v0.8.1
 	github.com/teamwork/guru v0.0.0-20180416195845-617a8909cb7f
 	github.com/teamwork/test v0.0.0-20190410143529-8897d82f8d46
