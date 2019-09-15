@@ -50,7 +50,7 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 			"unable to handle Content-Type %q", ct)
 	}
 	if fErr, ok := err.(*formam.Error); ok && fErr.Code() == formam.ErrCodeUnknownField {
-		zlog.Request(r).Error(err)
+		zlog.FieldsRequest(r).Error(err)
 		err = nil
 	}
 	return c, err

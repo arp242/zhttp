@@ -24,3 +24,7 @@ golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 zgo.at/zlog v0.0.0-20190729101808-11a778095e52 h1:PNcITo7xj7lKr7AUtEhZRlUnhLJrk2+q+XMtEUexH68=
 zgo.at/zlog v0.0.0-20190729101808-11a778095e52/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
+zgo.at/zlog v0.0.0-20190915001042-15885bfca737 h1:g2+5kK7dmiE8ouFpw7VuE3/qRjaEYIvWQJflD817VmM=
+zgo.at/zlog v0.0.0-20190915001042-15885bfca737/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
+zgo.at/zlog v0.0.0-20190915010658-04c369a7b887 h1:3O4NlkI6NmMMPQB3fEeq18Xyg0qlXbiupQbnX7b2waY=
+zgo.at/zlog v0.0.0-20190915010658-04c369a7b887/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=

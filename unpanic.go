@@ -22,7 +22,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 					err = fmt.Errorf("Panic: %+v", rec)
 				}
 
-				zlog.Request(r).Error(err)
+				zlog.FieldsRequest(r).Error(err)
 
 				// TODO: filter stack
 				// if prod {

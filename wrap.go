@@ -24,7 +24,7 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 	w.WriteHeader(code)
 
 	if code >= 500 {
-		zlog.Request(r).Error(reported)
+		zlog.FieldsRequest(r).Error(reported)
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
@@ -42,7 +42,7 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 			j, err = json.Marshal(map[string]string{"error": reported.Error()})
 		}
 		if err != nil {
-			zlog.Request(r).Error(err)
+			zlog.FieldsRequest(r).Error(err)
 		}
 		w.Write(j)
 
@@ -59,7 +59,7 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 			Error string
 		}{code, reported.Error()})
 		if err != nil {
-			zlog.Request(r).Error(err)
+			zlog.FieldsRequest(r).Error(err)
 		}
 	}
 }

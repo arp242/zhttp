@@ -52,7 +52,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 
 	b, err := base64.StdEncoding.DecodeString(c.Value[1:])
 	if err != nil {
-		zlog.Request(r).Error(err)
+		zlog.FieldsRequest(r).Error(err)
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name: cookieFlash, Value: "", Path: "/",
