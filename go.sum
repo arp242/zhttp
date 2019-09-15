@@ -30,3 +30,5 @@ zgo.at/zlog v0.0.0-20190915001042-15885bfca737 h1:g2+5kK7dmiE8ouFpw7VuE3/qRjaEYI
 zgo.at/zlog v0.0.0-20190915001042-15885bfca737/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
 zgo.at/zlog v0.0.0-20190915010658-04c369a7b887 h1:3O4NlkI6NmMMPQB3fEeq18Xyg0qlXbiupQbnX7b2waY=
 zgo.at/zlog v0.0.0-20190915010658-04c369a7b887/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
+zgo.at/zlog v1.0.0 h1:5r5ARbp6hbeMB1AmpppJZIxlRfE0Fp0OzqNlxVFagvQ=
+zgo.at/zlog v1.0.0/go.mod h1:/+tHzt+nRogoJkSjzSgmd9OeDFlTbjKnQUuEkald8pw=
