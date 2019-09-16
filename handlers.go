@@ -34,11 +34,13 @@ type (
 	}
 
 	Report struct {
-		ColumnNumber int    `json:"column-number"`
-		LineNumber   int    `json:"line-number"`
 		BlockedURI   string `json:"blocked-uri"`
-		Violated     string `json:"violated-directive"`
+		ColumnNumber int    `json:"column-number"`
+		DocumentURI  string `json:"document-uri"`
+		LineNumber   int    `json:"line-number"`
+		Referrer     string `json:"referrer"`
 		SourceFile   string `json:"source-file"`
+		Violated     string `json:"violated-directive"`
 	}
 )
 
@@ -51,7 +53,15 @@ func HandlerCSP() func(w http.ResponseWriter, r *http.Request) {
 
 		// Probably an extension or something.
 		if err == nil && !noise(csp.Report) {
-			zlog.Errorf("CSP error: %s", string(d))
+			zlog.Fields(zlog.F{
+				"BlockedURI":   csp.Report.BlockedURI,
+				"ColumnNumber": csp.Report.ColumnNumber,
+				"DocumentURI":  csp.Report.DocumentURI,
+				"LineNumber":   csp.Report.LineNumber,
+				"Referrer":     csp.Report.Referrer,
+				"SourceFile":   csp.Report.SourceFile,
+				"Violated":     csp.Report.Violated,
+			}).Errorf("CSP error")
 		}
 
 		w.WriteHeader(202)
