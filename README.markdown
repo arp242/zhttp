@@ -41,8 +41,3 @@ It's just a convencience wrapper around formam.
 ---
 
 `zhttp.HostRoute()` routes request to chi routers based on the Host header.
-
----
-
-`zhttp.PackDir()`, `zhttp.NewStatic()`, and `zhttp.NewTpl()` make it easy to
-serve static files with reload on dev, and compiled in the binary on production.
