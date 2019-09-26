@@ -70,11 +70,13 @@ func HandlerCSP() func(w http.ResponseWriter, r *http.Request) {
 
 func noise(r Report) bool {
 	// Probably some extension or whatnot that injected a script.
-	if r.ColumnNumber == 1 && r.LineNumber == 1 && r.BlockedURI == "inline" && r.Violated == "script-src" {
+	if r.ColumnNumber == 1 && r.LineNumber == 1 &&
+		r.Violated == "script-src" &&
+		(r.BlockedURI == "inline" || r.BlockedURI == "eval") {
 		return true
 	}
 
-	if strings.HasPrefix(r.SourceFile, "safari-extension://") {
+	if strings.HasPrefix(r.SourceFile, "safari-extension://") || strings.HasPrefix(r.SourceFile, "moz-extension://") {
 		return true
 	}
 
