@@ -121,6 +121,13 @@ func Template(w http.ResponseWriter, name string, data interface{}) error {
 	return tpl.ExecuteTemplate(w, name, data)
 }
 
+// MovedPermanently redirects to the given URL.
+func MovedPermanently(w http.ResponseWriter, url string) error {
+	w.Header().Set("Location", url)
+	w.WriteHeader(301)
+	return nil
+}
+
 // SeeOther redirects to the given URL.
 //
 // "A 303 response to a GET request indicates that the origin server does not

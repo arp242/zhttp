@@ -35,6 +35,9 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 				}
 			}
 		}
+		if !ok {
+			route, ok = routers["*"]
+		}
 
 		if !ok {
 			ErrPage(w, r, 404, fmt.Errorf("unknown domain: %q", r.Host))
