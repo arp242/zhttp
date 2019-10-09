@@ -53,6 +53,7 @@ func HandlerCSP() func(w http.ResponseWriter, r *http.Request) {
 
 		// Probably an extension or something.
 		if err == nil && !noise(csp.Report) {
+			fmt.Println(string(d))
 			zlog.Fields(zlog.F{
 				"BlockedURI":   csp.Report.BlockedURI,
 				"ColumnNumber": csp.Report.ColumnNumber,
