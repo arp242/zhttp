@@ -73,7 +73,7 @@ func noise(r Report) bool {
 	// Probably some extension or whatnot that injected a script.
 	if r.ColumnNumber == 1 && r.LineNumber == 1 &&
 		r.Violated == "script-src" &&
-		(r.BlockedURI == "inline" || r.BlockedURI == "eval") {
+		(r.BlockedURI == "inline" || r.BlockedURI == "eval" || r.BlockedURI == "data") {
 		return true
 	}
 
