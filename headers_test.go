@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/teamwork/test"
+	"zgo.at/ztest"
 )
 
 func TestHeaders(t *testing.T) {
@@ -46,7 +46,7 @@ func TestHeaders(t *testing.T) {
 			}
 
 			out := strings.TrimSpace(buf.String())
-			tt.want = strings.Replace(test.NormalizeIndent(tt.want), "\n", "\r\n", -1)
+			tt.want = strings.Replace(ztest.NormalizeIndent(tt.want), "\n", "\r\n", -1)
 			if out != tt.want {
 				t.Errorf("\nout:  %q\nwant: %q", out, tt.want)
 			}

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/teamwork/test"
+	"zgo.at/ztest"
 )
 
 type handle struct{}
@@ -28,32 +28,32 @@ func TestRatelimit(t *testing.T) {
 	wg.Add(2)
 	go func() { // goroutine to detect/test race.
 		defer wg.Done()
-		rr := test.HTTP(t, nil, handler)
+		rr := ztest.HTTP(t, nil, handler)
 		lock.Lock()
 		defer lock.Unlock()
-		test.Code(t, rr, 200)
+		ztest.Code(t, rr, 200)
 	}()
 	go func() {
 		defer wg.Done()
-		rr := test.HTTP(t, nil, handler)
+		rr := ztest.HTTP(t, nil, handler)
 		lock.Lock()
 		defer lock.Unlock()
-		test.Code(t, rr, 200)
+		ztest.Code(t, rr, 200)
 	}()
 	wg.Wait()
 
-	rr := test.HTTP(t, nil, handler)
-	test.Code(t, rr, 429)
+	rr := ztest.HTTP(t, nil, handler)
+	ztest.Code(t, rr, 429)
 
 	time.Sleep(1 * time.Second)
-	rr = test.HTTP(t, nil, handler)
-	test.Code(t, rr, 429)
+	rr = ztest.HTTP(t, nil, handler)
+	ztest.Code(t, rr, 429)
 
 	time.Sleep(1 * time.Second)
-	rr = test.HTTP(t, nil, handler)
-	test.Code(t, rr, 200)
-	rr = test.HTTP(t, nil, handler)
-	test.Code(t, rr, 429)
+	rr = ztest.HTTP(t, nil, handler)
+	ztest.Code(t, rr, 200)
+	rr = ztest.HTTP(t, nil, handler)
+	ztest.Code(t, rr, 429)
 }
 
 func BenchmarkRatelimit(b *testing.B) {
