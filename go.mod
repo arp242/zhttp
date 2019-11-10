@@ -8,6 +8,6 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/teamwork/guru v1.0.0
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect
-	zgo.at/zlog v1.0.5
+	zgo.at/zlog v1.0.6
 	zgo.at/ztest v0.0.0-20191108073241-44bac275c1ec
 )

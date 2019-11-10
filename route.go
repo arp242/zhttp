@@ -24,7 +24,7 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		host := strings.ToLower(r.Host)
+		host := RemovePort(strings.ToLower(r.Host))
 		route, ok := routers[host]
 		if !ok {
 			for k, v := range wildcards {
