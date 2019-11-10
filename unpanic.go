@@ -19,7 +19,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 
 				err, ok := rec.(error)
 				if !ok {
-					err = fmt.Errorf("Panic: %+v", rec)
+					err = fmt.Errorf("panic: %+v", rec)
 				}
 
 				zlog.FieldsRequest(r).Error(err)

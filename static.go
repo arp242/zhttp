@@ -73,8 +73,12 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if s.packed != nil {
 		v, ok := s.packed[path]
 		if !ok {
-			http.Error(w, fmt.Sprintf("packed file not found: %q", path), 404)
-			return
+			path = path + "/index.html"
+			v, ok = s.packed[path]
+			if !ok {
+				http.Error(w, fmt.Sprintf("packed file not found: %q", path), 404)
+				return
+			}
 		}
 		d = v
 	} else {
