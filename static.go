@@ -61,6 +61,10 @@ func NewStatic(dir, domain string, cache int, packed map[string][]byte) Static {
 	return Static{dir: dir, domain: domain, cacheControl: cc, packed: packed}
 }
 
+var Static404 = func(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, fmt.Sprintf("packed file not found: %q", r.RequestURI), 404)
+}
+
 func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.URL.Path, "..") {
 		http.Error(w, "yeh nah", http.StatusForbidden)
@@ -76,7 +80,7 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			path = path + "/index.html"
 			v, ok = s.packed[path]
 			if !ok {
-				http.Error(w, fmt.Sprintf("packed file not found: %q", path), 404)
+				Static404(w, r)
 				return
 			}
 		}
