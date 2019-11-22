@@ -3,7 +3,9 @@ package zhttp
 import (
 	"database/sql"
 	"encoding/json"
+	"hash/fnv"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"zgo.at/zlog"
@@ -19,12 +21,14 @@ type (
 	}
 )
 
+var ErrPage = DefaultErrPage
+
 // TODO: make it easy to hide errors on production.
-var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
+func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported error) {
 	w.WriteHeader(code)
 
 	if code >= 500 {
-		zlog.FieldsRequest(r).Error(reported)
+		zlog.Field("code", ErrorCode(reported)).FieldsRequest(r).Error(reported)
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
@@ -56,12 +60,23 @@ var ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported er
 
 		err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
 			Code  int
-			Error string
-		}{code, reported.Error()})
+			Error error
+		}{code, reported})
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
 		}
 	}
+}
+
+// ErrorCode gets a hash based on the error value.
+func ErrorCode(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	h := fnv.New32()
+	_, _ = h.Write([]byte(err.Error()))
+	return strconv.FormatInt(int64(h.Sum32()), 36)
 }
 
 // HandlerFunc function.
