@@ -1,5 +1,6 @@
 github.com/go-chi/chi v4.0.2+incompatible h1:maB6vn6FqCxrpz4FqWdh4+lwpyZIQS7YEAUcHlgXVRs=
 github.com/go-chi/chi v4.0.2+incompatible/go.mod h1:eB3wogJHnLi3x/kFX2A+IbTBlXxmMeXJVKy9tTv1XzQ=
+github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/monoculum/formam v0.0.0-20190830100315-7ff9597b1407 h1:ZU5O9BawmEx9Mu1lxn9NLIwO9DrqRfjE+HWKU+e9GKQ=
 github.com/monoculum/formam v0.0.0-20190830100315-7ff9597b1407/go.mod h1:JKa2av1XVkGjhxdLS59nDoXa2JpmIHpnURWNbzCtXtc=
@@ -14,15 +15,13 @@ golang.org/x/net v0.0.0-20190724013045-ca1201d0de80/go.mod h1:z5CRVTTTmAJ677TzLL
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
-zgo.at/utils v0.0.0-20191016025157-52ea15392a16 h1:+wY2KBlxI32OF4XwirSm4kDRniNL/dooD8Efg3xxJ64=
-zgo.at/utils v0.0.0-20191016025157-52ea15392a16/go.mod h1:PET0dez1GVYYmyI5x/+eJGbyOOF9s2YW8U+gRv7Looo=
 zgo.at/utils v0.0.0-20191105050800-0bd55a7ff246 h1:YVWoMsMiwQ61gDv1T1LTpcbxZTQPRSfz3GfKu09ytOA=
 zgo.at/utils v0.0.0-20191105050800-0bd55a7ff246/go.mod h1:PET0dez1GVYYmyI5x/+eJGbyOOF9s2YW8U+gRv7Looo=
-zgo.at/zlog v1.0.5 h1:8TColnNPK6v4ckxUJxYz5t+2Ml+s05aFNy/NpxLPcTk=
-zgo.at/zlog v1.0.5/go.mod h1:V3ytbwhdFfmcUglEwnvlJ0VKoFocxpfhRUAISEERmZ8=
+zgo.at/utils v1.0.0 h1:/7SEKiHr71EjegKaEVOe/9axJ/EjCj3GwTHz+TPiAa4=
+zgo.at/utils v1.0.0/go.mod h1:PET0dez1GVYYmyI5x/+eJGbyOOF9s2YW8U+gRv7Looo=
 zgo.at/zlog v1.0.6 h1:0LN5DIYbajUNSZrTa7pt3UgRxiG5R5NZoiR0OjDQVnU=
 zgo.at/zlog v1.0.6/go.mod h1:KC3mmJFl0M9IMPNk+5agwLeDHZFl1ANXAFI+stzDXfw=
 zgo.at/ztest v0.0.0-20191016022435-f3e360521191 h1:OWHdZobQysBEpa01t+/xOeMO0ZrsI6viJa+4nLILJGI=
 zgo.at/ztest v0.0.0-20191016022435-f3e360521191/go.mod h1:iTxcAVkHLq73Qnd+a8rlwc6Ayrk8sbnJPsGeapG/y0Q=
-zgo.at/ztest v0.0.0-20191108073241-44bac275c1ec h1:3H3+2zlDQ+dnlD6I9Tdmqds/HfnsHzlNAZiPiXNXS4c=
-zgo.at/ztest v0.0.0-20191108073241-44bac275c1ec/go.mod h1:iTxcAVkHLq73Qnd+a8rlwc6Ayrk8sbnJPsGeapG/y0Q=
+zgo.at/ztest v1.0.0 h1:MKJXDboceOH2bFKaWN8GJ0bUgfJgx4pp/HWeCTOCJbA=
+zgo.at/ztest v1.0.0/go.mod h1:iTxcAVkHLq73Qnd+a8rlwc6Ayrk8sbnJPsGeapG/y0Q=

@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"strconv"
@@ -25,6 +26,16 @@ var FuncMap = template.FuncMap{
 	"has_suffix":   ThasSuffix,
 	"option_value": ToptionValue,
 	"checkbox":     Tcheckbox,
+	"pp":           Tpp,
+}
+
+// Tpp pretty-prints any object.
+func Tpp(v interface{}) string {
+	j, err := json.MarshalIndent(v, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+	return string(j)
 }
 
 // TderefS dereferences a string pointer, returning "" if it's nil.

@@ -9,5 +9,5 @@ require (
 	github.com/teamwork/guru v1.0.0
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect
 	zgo.at/zlog v1.0.6
-	zgo.at/ztest v0.0.0-20191108073241-44bac275c1ec
+	zgo.at/ztest v1.0.0
 )
