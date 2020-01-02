@@ -60,8 +60,8 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 
 		err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
 			Code  int
-			Error string
-		}{code, reported.Error()})
+			Error error
+		}{code, reported})
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
 		}
