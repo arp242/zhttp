@@ -19,7 +19,13 @@ func (h handle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var kf = func(*http.Request) string { return "test" }
 
 func TestRatelimit(t *testing.T) {
-	handler := Ratelimit(kf, NewRatelimitMemory(), 2, 2)(handle{})
+	handler := Ratelimit(RatelimitOptions{
+		Store:   NewRatelimitMemory(),
+		Limit:   2,
+		Period:  2,
+		Client:  kf,
+		Message: "oh noes",
+	})(handle{})
 
 	var (
 		wg   sync.WaitGroup
@@ -44,20 +50,34 @@ func TestRatelimit(t *testing.T) {
 
 	rr := ztest.HTTP(t, nil, handler)
 	ztest.Code(t, rr, 429)
+	if rr.Body.String() != "oh noes" {
+		t.Errorf("wrong body: %q", rr.Body.String())
+	}
 
 	time.Sleep(1 * time.Second)
 	rr = ztest.HTTP(t, nil, handler)
 	ztest.Code(t, rr, 429)
+	if rr.Body.String() != "oh noes" {
+		t.Errorf("wrong body: %q", rr.Body.String())
+	}
 
 	time.Sleep(1 * time.Second)
 	rr = ztest.HTTP(t, nil, handler)
 	ztest.Code(t, rr, 200)
 	rr = ztest.HTTP(t, nil, handler)
 	ztest.Code(t, rr, 429)
+	if rr.Body.String() != "oh noes" {
+		t.Errorf("wrong body: %q", rr.Body.String())
+	}
 }
 
 func BenchmarkRatelimit(b *testing.B) {
-	handler := Ratelimit(kf, NewRatelimitMemory(), 60, 20)(handle{})
+	handler := Ratelimit(RatelimitOptions{
+		Store:  NewRatelimitMemory(),
+		Limit:  60,
+		Period: 20,
+		Client: kf,
+	})(handle{})
 
 	rr := httptest.NewRecorder()
 	r, err := http.NewRequest("GET", "", nil)
