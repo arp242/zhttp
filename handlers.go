@@ -30,6 +30,36 @@ func HandlerRobots(rules [][]string) func(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// HandlerJSErr logs JavaScript errors from window.onerror.
+func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
+	type Error struct {
+		Msg    string `json:"msg"`
+		URL    string `json:"url"`
+		Line   string `json:"line"`
+		Column string `json:"column"`
+		Stack  string `json:"stack"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var args Error
+		_, err := Decode(r, &args)
+		if err != nil {
+			zlog.Error(err)
+			return
+		}
+
+		zlog.Fields(zlog.F{
+			"url":    args.URL,
+			"line":   args.Line,
+			"column": args.Column,
+			"stack":  args.Stack,
+		}).Errorf("JavaScript error: %s", args.Msg)
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // CSP errors.
 type (
 	CSPError struct {
