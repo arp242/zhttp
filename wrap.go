@@ -121,6 +121,11 @@ func String(w http.ResponseWriter, s string) error {
 	return nil
 }
 
+func Text(w http.ResponseWriter, s string) error {
+	w.Header().Set("Content-Type", "text/plain")
+	return String(w, s)
+}
+
 func JSON(w http.ResponseWriter, i interface{}) error {
 	j, err := json.Marshal(i)
 	if err != nil {
