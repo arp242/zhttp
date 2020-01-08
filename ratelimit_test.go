@@ -21,8 +21,7 @@ var kf = func(*http.Request) string { return "test" }
 func TestRatelimit(t *testing.T) {
 	handler := Ratelimit(RatelimitOptions{
 		Store:   NewRatelimitMemory(),
-		Limit:   2,
-		Period:  2,
+		Limit:   func(*http.Request) (int, int64) { return 2, 2 },
 		Client:  kf,
 		Message: "oh noes",
 	})(handle{})
@@ -74,8 +73,7 @@ func TestRatelimit(t *testing.T) {
 func BenchmarkRatelimit(b *testing.B) {
 	handler := Ratelimit(RatelimitOptions{
 		Store:  NewRatelimitMemory(),
-		Limit:  60,
-		Period: 20,
+		Limit:  func(*http.Request) (int, int64) { return 60, 20 },
 		Client: kf,
 	})(handle{})
 

@@ -8,11 +8,10 @@ import (
 )
 
 type RatelimitOptions struct {
-	Message string                     // Displayed when limit is reached.
-	Client  func(*http.Request) string // String to identify client (e.g. ip address).
-	Store   RatelimitStore             // How to store the # of requests.
-	Period  int64                      // Time period over which to operate.
-	Limit   int                        // Number of allowed calls.
+	Message string                                        // Displayed when limit is reached.
+	Client  func(*http.Request) string                    // String to identify client (e.g. ip address).
+	Store   RatelimitStore                                // How to store the # of requests.
+	Limit   func(*http.Request) (limit int, period int64) // "limit" requests over "period" seconds.
 }
 
 type RatelimitStore interface {
@@ -20,21 +19,12 @@ type RatelimitStore interface {
 }
 
 // Ratelimit requests.
-//
-// Visitors are identified by a "key". This is usually the IP address or user
-// ID.
-//
-// perPeriod is the number of API calls (to all endpoints) that can be made
-// by the client before receiving a 429 error
 func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 	if opts.Client == nil {
 		panic("opts.Client is nil")
 	}
-	if opts.Limit == 0 {
-		panic("opts.Limit is 0")
-	}
-	if opts.Period == 0 {
-		panic("opts.Period is 0")
+	if opts.Limit == nil {
+		panic("opts.Limit is nil")
 	}
 
 	msg := []byte(opts.Message)
@@ -44,10 +34,11 @@ func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			granted, remaining := opts.Store.Grant(opts.Client(r), opts.Limit, opts.Period)
-			w.Header().Add("X-Rate-Limit-Limit", strconv.Itoa(opts.Limit))
+			limit, period := opts.Limit(r)
+			granted, remaining := opts.Store.Grant(opts.Client(r), limit, period)
+			w.Header().Add("X-Rate-Limit-Limit", strconv.Itoa(limit))
 			w.Header().Add("X-Rate-Limit-Remaining", strconv.Itoa(remaining))
-			w.Header().Add("X-Rate-Limit-Reset", strconv.FormatInt(opts.Period, 10))
+			w.Header().Add("X-Rate-Limit-Reset", strconv.FormatInt(period, 10))
 			if !granted {
 				w.WriteHeader(http.StatusTooManyRequests)
 				w.Write(msg)
@@ -74,7 +65,6 @@ func NewRatelimitMemory() *RatelimitMemory {
 	return &RatelimitMemory{rates: make(map[string][]int64)}
 }
 
-//func (m *RatelimitMemory) Grant(key string, perPeriod int, duration int64) (bool, int) {
 func (m *RatelimitMemory) Grant(key string, n int, period int64) (bool, int) {
 	accesstime := time.Now().Unix()
 
