@@ -49,6 +49,11 @@ func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 	}
 }
 
+// RatelimitLimit is a simple limiter, always returning the same numbers.
+func RatelimitLimit(limit int, period int64) func(*http.Request) (int, int64) {
+	return func(*http.Request) (int, int64) { return limit, period }
+}
+
 // RatelimitIP rate limits based IP address.
 //
 // Assumes RemoteAddr is set correctly. E.g. with chi's middleware.RealIP
