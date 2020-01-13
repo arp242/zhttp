@@ -33,11 +33,12 @@ func HandlerRobots(rules [][]string) func(w http.ResponseWriter, r *http.Request
 // HandlerJSErr logs JavaScript errors from window.onerror.
 func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
 	type Error struct {
-		Msg    string `json:"msg"`
-		URL    string `json:"url"`
-		Line   string `json:"line"`
-		Column string `json:"column"`
-		Stack  string `json:"stack"`
+		Msg       string `json:"msg"`
+		URL       string `json:"url"`
+		Line      string `json:"line"`
+		Column    string `json:"column"`
+		Stack     string `json:"stack"`
+		UserAgent string `json:"ua"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -49,10 +50,11 @@ func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		zlog.Fields(zlog.F{
-			"url":    args.URL,
-			"line":   args.Line,
-			"column": args.Column,
-			"stack":  args.Stack,
+			"url":       args.URL,
+			"line":      args.Line,
+			"column":    args.Column,
+			"stack":     args.Stack,
+			"userAgent": args.UserAgent,
 		}).Errorf("JavaScript error: %s", args.Msg)
 
 		w.Header().Set("Content-Type", "text/plain")
