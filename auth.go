@@ -17,6 +17,12 @@ var (
 	oneYear   = 24 * 365 * time.Hour
 )
 
+// Flags to add to all cookies (login and flash).
+var (
+	CookieSecure   = false
+	CookieSameSite = http.SameSiteLaxMode
+)
+
 type loadFunc func(ctx context.Context, email string) (User, error)
 
 type User interface {
@@ -25,16 +31,20 @@ type User interface {
 
 func SetCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
-		Domain:  RemovePort(domain),
-		Name:    cookieKey,
-		Value:   val,
-		Path:    "/",
-		Expires: time.Now().Add(oneYear),
+		Domain:   RemovePort(domain),
+		Name:     cookieKey,
+		Value:    val,
+		Path:     "/",
+		Expires:  time.Now().Add(oneYear),
+		HttpOnly: true,
+		Secure:   CookieSecure,
+		SameSite: CookieSameSite,
 	})
 }
 
-func ClearCookie(w http.ResponseWriter) {
+func ClearCookie(w http.ResponseWriter, domain string) {
 	http.SetCookie(w, &http.Cookie{
+		Domain:  RemovePort(domain),
 		Name:    cookieKey,
 		Value:   "",
 		Path:    "/",

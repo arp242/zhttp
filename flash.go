@@ -68,10 +68,13 @@ func flash(w http.ResponseWriter, lvl, msg string, v ...interface{}) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:    cookieFlash,
-		Value:   lvl + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),
-		Path:    "/",
-		Expires: time.Now().Add(1 * time.Minute),
+		Name:     cookieFlash,
+		Value:    lvl + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),
+		Path:     "/",
+		Expires:  time.Now().Add(1 * time.Minute),
+		HttpOnly: true,
+		Secure:   CookieSecure,
+		SameSite: CookieSameSite,
 	})
 }
 
