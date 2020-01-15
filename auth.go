@@ -89,17 +89,12 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 				token := r.FormValue("csrf")
 				r.Form.Del("csrf")
 				if token == "" {
-					w.WriteHeader(http.StatusBadRequest)
-					fmt.Fprintf(w, "token is empty") // TODO: err
-					return
-				}
-
-				t := u.GetToken()
-				if t != "" && token != t {
-					w.WriteHeader(http.StatusBadRequest)
-					fmt.Printf("token %q doesn't match strored %q\n", token, t)
-					fmt.Fprintf(w, "token doesn't match")
-					return
+					FlashError(w, "CSRF token is empty")
+				} else {
+					t := u.GetToken()
+					if t != "" && token != t {
+						FlashError(w, "Invalid CSRF token")
+					}
 				}
 			}
 
