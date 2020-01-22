@@ -27,7 +27,30 @@ var FuncMap = template.FuncMap{
 	"option_value": ToptionValue,
 	"checkbox":     Tcheckbox,
 	"pp":           Tpp,
+	"string":       Tstring,
+	"map":          Tmap,
 }
+
+// Tmap creates a map.
+//
+// https://stackoverflow.com/a/18276968/660921
+func Tmap(values ...interface{}) map[string]interface{} {
+	if len(values)%2 != 0 {
+		panic("zhttp.Tmap: need key/value")
+	}
+	dict := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			panic(fmt.Sprintf("zhttp.Tmap: key must be a string: %T: %#[1]v", key))
+		}
+		dict[key] = values[i+1]
+	}
+	return dict
+}
+
+// Tstring converts anything to a string.
+func Tstring(v interface{}) string { return fmt.Sprintf("%v", v) }
 
 // Tpp pretty-prints any object.
 func Tpp(v interface{}) string {
@@ -154,7 +177,7 @@ func Tchecked(vals []int64, id int64) template.HTMLAttr {
 }
 
 // Tnformat formats a number with thousand separators.
-func Tnformat(n int) string {
+func Tnformat(n int, sep rune) string {
 	s := strconv.FormatInt(int64(n), 10)
 	if len(s) < 4 {
 		return s
@@ -167,8 +190,8 @@ func Tnformat(n int) string {
 
 	var out []rune
 	for i := range b {
-		if i > 0 && i%3 == 0 {
-			out = append(out, ' ')
+		if i > 0 && i%3 == 0 && sep > 0 {
+			out = append(out, sep)
 		}
 		out = append(out, rune(b[i]))
 	}
