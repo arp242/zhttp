@@ -63,6 +63,7 @@ func TestTnformat(t *testing.T) {
 		{300000, '.', "300.000"},
 		{4987654, '\'', "4'987'654"},
 		{4987654, 0x00, "4987654"},
+		{4987654, 0x01, "4987654"},
 		// Indian, TODO
 		// https://en.wikipedia.org/wiki/Indian_numbering_system
 		// {4987654, 0x01, "49,87,654"},

@@ -190,7 +190,7 @@ func Tnformat(n int, sep rune) string {
 
 	var out []rune
 	for i := range b {
-		if i > 0 && i%3 == 0 && sep > 0 {
+		if i > 0 && i%3 == 0 && sep > 1 {
 			out = append(out, sep)
 		}
 		out = append(out, rune(b[i]))
