@@ -136,3 +136,19 @@ func MountACME(r chi.Router, certdir string) {
 		w.Write(data)
 	})
 }
+
+// HandlerRedirect redirects all HTTP requests to HTTPS.
+func HandlerRedirectHTTP(port string) http.HandlerFunc {
+	if port == "" {
+		port = "443"
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query().Encode()
+		if len(q) > 0 {
+			q = "?" + q
+		}
+		w.Header().Set("Location", fmt.Sprintf("https://%s:%s%s%s", r.Host, port, r.URL.Path, q))
+		w.WriteHeader(301)
+	}
+
+}

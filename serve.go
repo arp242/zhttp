@@ -2,15 +2,19 @@ package zhttp
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 
 	"zgo.at/zlog"
 )
 
 // Serve a HTTP server with graceful shutdown.
-func Serve(server *http.Server, wait func()) {
+//
+// If tls is given, port 80 will be redirected.
+func Serve(server *http.Server, tls string, wait func()) {
 	consClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
@@ -30,11 +34,36 @@ func Serve(server *http.Server, wait func()) {
 		close(consClosed)
 	}()
 
-	// Start HTTP servers.
+	var host, port string
+
+	// Redirect port 80 to TLS.
+	if tls != "" {
+		var err error
+		host, port, err = net.SplitHostPort(server.Addr)
+		if err != nil {
+			host = server.Addr
+			port = "443"
+		}
+
+		go func() {
+			err = http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
+			if err != nil && err != http.ErrServerClosed {
+				zlog.Errorf("zhttp.Serve: ListenAndServe redirect: %s", err)
+			}
+		}()
+	}
+
+	// Start HTTP server.
 	go func() {
-		err := server.ListenAndServe()
+		var err error
+		if tls == "" {
+			err = server.ListenAndServe()
+		} else {
+			cert_key := strings.SplitN(tls, ":", 2)
+			err = server.ListenAndServeTLS(cert_key[0], cert_key[1])
+		}
 		if err != nil && err != http.ErrServerClosed {
-			zlog.Errorf("http.ListenAndServe: %s", err)
+			zlog.Errorf("zhttp.Serve: ListenAndServe: %s", err)
 		}
 	}()
 
