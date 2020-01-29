@@ -21,6 +21,14 @@ type (
 	}
 )
 
+// WrapWriter replaces the http.ResponseWriter with our version of
+// http.ResponseWriter for some additional functionality.
+func WrapWriter(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(NewResponseWriter(w, r.ProtoMajor), r)
+	})
+}
+
 var ErrPage = DefaultErrPage
 
 // TODO: make it easy to hide errors on production.
@@ -110,19 +118,26 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 }
 
 func Bytes(w http.ResponseWriter, b []byte) error {
-	w.WriteHeader(200)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(200)
+	}
 	w.Write(b)
 	return nil
 }
 
 func String(w http.ResponseWriter, s string) error {
-	w.WriteHeader(200)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(200)
+	}
 	w.Write([]byte(s))
 	return nil
 }
 
 func Text(w http.ResponseWriter, s string) error {
-	w.Header().Set("Content-Type", "text/plain")
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(200)
+	}
 	return String(w, s)
 }
 
@@ -132,20 +147,28 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+	}
 	w.Write(j)
 	return nil
 }
 
 func Template(w http.ResponseWriter, name string, data interface{}) error {
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(200)
+	}
 	return tpl.ExecuteTemplate(w, name, data)
 }
 
 // MovedPermanently redirects to the given URL.
 func MovedPermanently(w http.ResponseWriter, url string) error {
 	w.Header().Set("Location", url)
-	w.WriteHeader(301)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(301)
+	}
 	return nil
 }
 
@@ -159,6 +182,8 @@ func MovedPermanently(w http.ResponseWriter, url string) error {
 // recipients without implying that it represents the original target resource."
 func SeeOther(w http.ResponseWriter, url string) error {
 	w.Header().Set("Location", url)
-	w.WriteHeader(303)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(303)
+	}
 	return nil
 }

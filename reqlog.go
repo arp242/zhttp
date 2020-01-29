@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/go-chi/chi/middleware"
 )
 
 func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Handler {
@@ -27,7 +25,10 @@ func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Ha
 
 			start := time.Now()
 
-			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			ww, ok := w.(ResponseWriter)
+			if !ok {
+				ww = NewResponseWriter(w, r.ProtoMajor)
+			}
 			next.ServeHTTP(ww, r)
 
 			// Get color-coded status code.
