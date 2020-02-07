@@ -98,7 +98,7 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// A github.com/teamwork/guru error with an embeded status code.
+		// A github.com/teamwork/guru error with an embedded status code.
 		if stErr, ok := err.(coder); ok {
 			ErrPage(w, r, stErr.Code(), stErr)
 			return

@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"bytes"
+	"errors"
 	"html/template"
 	"io"
 	"log"
@@ -26,6 +27,10 @@ func (t *lockedTpl) set(tp *template.Template) {
 }
 
 func (t *lockedTpl) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+	if t == nil || t.t == nil {
+		return errors.New("zhttp.ExecuteTemplate: not initialized; call InitTpl")
+	}
+
 	t.RLock()
 	defer t.RUnlock()
 	return t.t.ExecuteTemplate(wr, name, data)

@@ -119,7 +119,7 @@ func noise(r Report) bool {
 	return false
 }
 
-// HandlerACME adds a handler to respond to http-01 verifications.
+// MountACME adds a handler to respond to http-01 verifications.
 func MountACME(r chi.Router, certdir string) {
 	if certdir == "" {
 		panic("certdir is empty")
@@ -137,7 +137,7 @@ func MountACME(r chi.Router, certdir string) {
 	})
 }
 
-// HandlerRedirect redirects all HTTP requests to HTTPS.
+// HandlerRedirectHTTP redirects all HTTP requests to HTTPS.
 func HandlerRedirectHTTP(port string) http.HandlerFunc {
 	if port == "" {
 		port = "443"

@@ -59,8 +59,8 @@ func Serve(server *http.Server, tls string, wait func()) {
 		if tls == "" {
 			err = server.ListenAndServe()
 		} else {
-			cert_key := strings.SplitN(tls, ":", 2)
-			err = server.ListenAndServeTLS(cert_key[0], cert_key[1])
+			certAndKey := strings.SplitN(tls, ":", 2)
+			err = server.ListenAndServeTLS(certAndKey[0], certAndKey[1])
 		}
 		if err != nil && err != http.ErrServerClosed {
 			zlog.Errorf("zhttp.Serve: ListenAndServe: %s", err)

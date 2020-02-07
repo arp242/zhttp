@@ -125,7 +125,7 @@ func Tsum(n, n2 int, n3 ...int) int {
 	return r
 }
 
-// Tsub substracts all the given numbers.
+// Tsub subtracts all the given numbers.
 func Tsub(n, n2 int, n3 ...int) int {
 	r := n - n2
 	for i := range n3 {
