@@ -35,6 +35,7 @@ func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
 	type Error struct {
 		Msg       string `json:"msg"`
 		URL       string `json:"url"`
+		Loc       string `json:"loc"`
 		Line      string `json:"line"`
 		Column    string `json:"column"`
 		Stack     string `json:"stack"`
@@ -51,6 +52,7 @@ func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
 
 		zlog.Fields(zlog.F{
 			"url":       args.URL,
+			"loc":       args.Loc,
 			"line":      args.Line,
 			"column":    args.Column,
 			"stack":     args.Stack,
