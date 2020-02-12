@@ -17,6 +17,9 @@ const (
 	ContentJSON
 )
 
+// LogUnknownFields tells Decode() to issue an error log on unknown fields.
+var LogUnknownFields bool
+
 // Decode request parameters from a form, JSON body, or query parameters.
 //
 // Returns one of the Content* constants, which is useful if you want to
@@ -50,7 +53,9 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 			"unable to handle Content-Type %q", ct)
 	}
 	if fErr, ok := err.(*formam.Error); ok && fErr.Code() == formam.ErrCodeUnknownField {
-		zlog.FieldsRequest(r).Error(err)
+		if LogUnknownFields {
+			zlog.FieldsRequest(r).Error(err)
+		}
 		err = nil
 	}
 	return c, err
