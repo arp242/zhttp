@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
 	"zgo.at/zlog"
 )
 
@@ -119,24 +118,6 @@ func noise(r Report) bool {
 	}
 
 	return false
-}
-
-// MountACME adds a handler to respond to http-01 verifications.
-func MountACME(r chi.Router, certdir string) {
-	if certdir == "" {
-		panic("certdir is empty")
-	}
-
-	r.Get("/.well-known/acme-challenge/{key}", func(w http.ResponseWriter, r *http.Request) {
-		path := fmt.Sprintf("%s/.well-known/acme-challenge/%s",
-			certdir, tr.Replace(chi.URLParam(r, "key")))
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("can't read %q: %s", path, err), 400)
-			return
-		}
-		w.Write(data)
-	})
 }
 
 // HandlerRedirectHTTP redirects all HTTP requests to HTTPS.

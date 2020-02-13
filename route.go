@@ -4,16 +4,24 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/go-chi/chi"
 )
 
-// HostRoute redirects requests to chi.Routers based on the Host header.
+// HostRoute routes requests based on the Host header.
 //
 // The routers can be simple domain names ("example.com", "foo.example.com") or
 // with a leading wildcard ("*.example.com", "*.foo.example.com").
-func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
-	wildcards := make(map[string]chi.Router)
+//
+// Exact matches are preferred over wildcards (e.g. "foo.example.com" trumps
+// "*.example.com"). A single "*" will match any host and is used if nothing
+// else matches.
+func HostRoute(routers map[string]http.Handler) http.HandlerFunc {
+	// Only one route which is a wildcard route, we can just pass everything
+	// through to that.
+	if r, ok := routers["*"]; ok && len(routers) == 1 {
+		return r.ServeHTTP
+	}
+
+	wildcards := make(map[string]http.Handler)
 	for k, v := range routers {
 		if strings.HasPrefix(k, "*.") {
 			wildcards[k[2:]] = v
@@ -55,9 +63,8 @@ func HostRoute(routers map[string]chi.Router) http.HandlerFunc {
 // www.example.com/a?x
 //
 // Only GET requests are redirected.
-func RedirectHost(dst string) chi.Router {
-	r := chi.NewRouter()
-	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+func RedirectHost(dst string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query().Encode()
 		if len(q) > 0 {
 			q = "?" + q
@@ -65,5 +72,4 @@ func RedirectHost(dst string) chi.Router {
 		w.Header().Set("Location", dst+r.URL.Path+q)
 		w.WriteHeader(301)
 	})
-	return r
 }
