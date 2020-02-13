@@ -1,6 +1,9 @@
 package zhttp
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 // RemovePort removes the "port" part of an hostname.
 //
@@ -11,4 +14,17 @@ func RemovePort(host string) string {
 		return host
 	}
 	return shost
+}
+
+var tr = strings.NewReplacer(
+	".", "",
+	"/", "",
+	`\`, "",
+	"\x00", "",
+)
+
+// SafePath converts any string to a safe pathname, preventing directory
+// traversal attacks and the like.
+func SafePath(s string) string {
+	return tr.Replace(s)
 }

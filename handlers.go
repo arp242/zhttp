@@ -11,8 +11,6 @@ import (
 	"zgo.at/zlog"
 )
 
-var tr = strings.NewReplacer(".", "", "/", "", `\`, "")
-
 // HandlerRobots writes a simple robots.txt.
 func HandlerRobots(rules [][]string) func(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
