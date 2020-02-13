@@ -2,19 +2,28 @@ package zhttp
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
+	"path/filepath"
 
+	"github.com/pkg/errors"
 	"zgo.at/zlog"
+)
+
+const (
+	ServeTLS      = uint8(0b0001)
+	ServeRedirect = uint8(0b0010)
 )
 
 // Serve a HTTP server with graceful shutdown.
 //
-// If tls is given, port 80 will be redirected.
-func Serve(server *http.Server, tls string, wait func()) {
+// The server will use TLS if the http.Server has a valid TLSConfig; it will
+// also try to redirect port 80 to the TLS server, but will gracefully fail if
+// the permission for this is denied.
+func Serve(flags uint8, server *http.Server) {
 	consClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
@@ -34,41 +43,41 @@ func Serve(server *http.Server, tls string, wait func()) {
 		close(consClosed)
 	}()
 
-	var host, port string
-
-	// Redirect port 80 to TLS.
-	if tls != "" {
-		var err error
-		host, port, err = net.SplitHostPort(server.Addr)
-		if err != nil {
-			host = server.Addr
-			port = "443"
-		}
-
-		go func() {
-			err = http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
-			if err != nil && err != http.ErrServerClosed {
-				zlog.Errorf("zhttp.Serve: ListenAndServe redirect: %s", err)
-			}
-		}()
-	}
-
-	// Start HTTP server.
 	go func() {
 		var err error
-		if tls == "" {
-			err = server.ListenAndServe()
+		if flags&ServeTLS != 0 {
+			err = server.ListenAndServeTLS("", "")
 		} else {
-			certAndKey := strings.SplitN(tls, ":", 2)
-			err = server.ListenAndServeTLS(certAndKey[0], certAndKey[1])
+			err = server.ListenAndServe()
 		}
 		if err != nil && err != http.ErrServerClosed {
-			zlog.Errorf("zhttp.Serve: ListenAndServe: %s", err)
+			zlog.Errorf("zhttp.Serve: %s", err)
 		}
 	}()
 
-	<-consClosed
-	if wait != nil {
-		wait()
+	if flags&ServeRedirect != 0 {
+		go func() {
+			host, port, err := net.SplitHostPort(server.Addr)
+			if err != nil {
+				host = server.Addr
+				port = "443"
+			}
+
+			go func() {
+				err := http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
+				if err != nil && err != http.ErrServerClosed {
+					if errors.Is(err, os.ErrPermission) {
+						abs, _ := filepath.Abs(os.Args[0])
+						fmt.Fprintf(os.Stderr, "WARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\n", port)
+						fmt.Fprintf(os.Stderr, "WARNING: On Linux, try: setcap 'cap_net_bind_service=+ep' %s\n",
+							abs)
+					}
+
+					zlog.Errorf("zhttp.Serve: ListenAndServe redirect 80: %s", err)
+				}
+			}()
+		}()
 	}
+
+	<-consClosed
 }

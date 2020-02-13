@@ -1,6 +1,6 @@
 module zgo.at/zhttp
 
-go 1.12
+go 1.13
 
 require (
 	github.com/monoculum/formam v0.0.0-20191229172733-952f0766a724
