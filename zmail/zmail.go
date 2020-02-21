@@ -66,21 +66,26 @@ func sendMail(subject string, from mail.Address, to []string, body []byte) error
 		for _, t := range to {
 			domain := t[strings.LastIndex(t, "@")+1:]
 			mxs, err := net.LookupMX(domain)
+
+			var hosts []string
 			if err != nil {
-				zlog.Field("domain", domain).Errorf("zmail sendMail: %s", err)
-				return
+				hosts = []string{domain}
+			} else {
+				for _, mx := range mxs {
+					hosts = append(hosts, mx.Host)
+				}
 			}
 
-			for _, mx := range mxs {
+			for _, h := range hosts {
 				logerr := func(err error) {
 					zlog.Fields(zlog.F{
-						"host": mx.Host,
+						"host": h,
 						"from": from,
 						"to":   to,
 					}).Error(err)
 				}
 
-				c, err := smtp.Dial(mx.Host + ":25")
+				c, err := smtp.Dial(h + ":25")
 				if err != nil {
 					logerr(err)
 					if strings.Contains(err.Error(), " blocked ") {
@@ -104,7 +109,7 @@ func sendMail(subject string, from mail.Address, to []string, body []byte) error
 				}
 
 				if ok, _ := c.Extension("STARTTLS"); ok {
-					err := c.StartTLS(&tls.Config{ServerName: mx.Host})
+					err := c.StartTLS(&tls.Config{ServerName: h})
 					if err != nil {
 						logerr(err)
 						break
