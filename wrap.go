@@ -136,7 +136,6 @@ func String(w http.ResponseWriter, s string) error {
 func Text(w http.ResponseWriter, s string) error {
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(200)
 	}
 	return String(w, s)
 }
