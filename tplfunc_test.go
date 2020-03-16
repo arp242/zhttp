@@ -21,7 +21,7 @@ func TestTmap(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
 			out := Tmap(tt.in...)
-			if d := ztest.Diff(out, tt.want); d != "" {
+			if d := ztest.Diff(fmt.Sprintf("%+v", out), fmt.Sprintf("%+v", tt.want)); d != "" {
 				t.Errorf(d)
 			}
 		})
