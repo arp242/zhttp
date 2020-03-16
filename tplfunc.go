@@ -202,7 +202,7 @@ func Tnformat(n int, sep rune) string {
 	return string(out)
 }
 
-// Tdformat formats a time as the given format string.
+// Ttformat formats a time as the given format string.
 func Ttformat(t time.Time, fmt string) string {
 	if fmt == "" {
 		fmt = "2006-01-02"
