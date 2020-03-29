@@ -76,15 +76,14 @@ func TderefS(s *string) string {
 func Tcheckbox(current bool, name string) template.HTML {
 	if current {
 		return template.HTML(fmt.Sprintf(`
-			<input type="checkbox" name="%s" checked>
-			<input type="hidden"   name="%[1]s" value="off">
-		`, name))
+			<input type="checkbox" name="%s" id="%[1]s" checked>
+			<input type="hidden" name="%[1]s" value="off">
+		`, template.HTMLEscapeString(name)))
 	}
-
 	return template.HTML(fmt.Sprintf(`
-		<input type="checkbox" name="%s">
-		<input type="hidden"   name="%[1]s" value="off">
-	`, name))
+		<input type="checkbox" name="%s" id="%[1]s">
+		<input type="hidden" name="%[1]s" value="off">
+	`, template.HTMLEscapeString(name)))
 }
 
 // ToptionValue inserts the value attribute, and selected attribute if the value
