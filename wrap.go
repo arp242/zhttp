@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"hash/fnv"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -115,6 +116,14 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 
 		ErrPage(w, r, 500, err)
 	}
+}
+
+func Stream(w http.ResponseWriter, fp io.Reader) error {
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(200)
+	}
+	_, err := io.Copy(w, fp)
+	return err
 }
 
 func Bytes(w http.ResponseWriter, b []byte) error {
