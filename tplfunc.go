@@ -52,7 +52,7 @@ func Tmap(values ...interface{}) map[string]interface{} {
 // Tstring converts anything to a string.
 func Tstring(v interface{}) string { return fmt.Sprintf("%v", v) }
 
-// Tpp pretty-prints any object.
+// Tpp pretty-prints any object as JSON.
 func Tpp(v interface{}) string {
 	j, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {

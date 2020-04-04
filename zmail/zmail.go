@@ -19,7 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/singleflight"
 	"zgo.at/zlog"
 )
@@ -185,7 +184,7 @@ func sendRelay(subject string, from mail.Address, to []string, body []byte) erro
 				"host": srv.Host,
 				"from": from,
 				"to":   to,
-			}).Error(errors.Wrap(err, "smtp.SendMail"))
+			}).Errorf("smtp.SendMail: %w", err)
 		}
 	}()
 	return nil

@@ -2,6 +2,8 @@ package zhttp
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -52,11 +54,15 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		err = guru.Errorf(http.StatusUnsupportedMediaType,
 			"unable to handle Content-Type %q", ct)
 	}
-	if fErr, ok := err.(*formam.Error); ok && fErr.Code() == formam.ErrCodeUnknownField {
+	var fErr *formam.Error
+	if errors.As(err, &fErr) && fErr.Code() == formam.ErrCodeUnknownField {
 		if LogUnknownFields {
 			zlog.FieldsRequest(r).Error(err)
 		}
 		err = nil
 	}
-	return c, err
+	if err != nil {
+		return 0, fmt.Errorf("zhttp.Decode: %w", err)
+	}
+	return c, nil
 }

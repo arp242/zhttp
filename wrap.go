@@ -3,6 +3,7 @@ package zhttp
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"hash/fnv"
 	"io"
 	"net/http"
@@ -100,7 +101,8 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 		}
 
 		// A github.com/teamwork/guru error with an embedded status code.
-		if stErr, ok := err.(coder); ok {
+		var stErr coder
+		if errors.As(err, &stErr) {
 			ErrPage(w, r, stErr.Code(), stErr)
 			return
 		}

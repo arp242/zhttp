@@ -1,10 +1,10 @@
 package zhttp
 
 import (
+	"errors"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/teamwork/guru"
 	"zgo.at/zlog"
 )

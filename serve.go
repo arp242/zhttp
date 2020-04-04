@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"os/signal"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"zgo.at/zlog"
 )
 

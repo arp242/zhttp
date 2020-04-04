@@ -3,12 +3,12 @@ package zhttp
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"zgo.at/zhttp/ctxkey"
 )
 
@@ -65,7 +65,7 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 			}
 
 			u, err := load(r.Context(), c.Value)
-			if errors.Cause(err) == sql.ErrNoRows { // Invalid token or whatever.
+			if errors.Is(err, sql.ErrNoRows) { // Invalid token or whatever.
 				//fmt.Fprintf(os.Stderr, "zhttp.Auth: no rows\n") // TODO: log
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
@@ -82,7 +82,7 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 				err := r.ParseForm()
 				if err != nil {
 					w.WriteHeader(500)
-					fmt.Fprintf(w, "ParseForm: %s", err) // TODO: err
+					fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: err
 					return
 				}
 
@@ -119,7 +119,8 @@ func Filter(f filterFunc) func(http.Handler) http.Handler {
 			}
 
 			code := http.StatusForbidden
-			if cErr, ok := err.(coder); ok {
+			var cErr coder
+			if errors.As(err, &cErr) {
 				code = cErr.Code()
 			}
 
