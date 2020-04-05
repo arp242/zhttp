@@ -107,8 +107,8 @@ type filterFunc func(http.ResponseWriter, *http.Request) error
 
 // Filter access to a resource.
 //
-// If the returning error is a github.com/teamwork/guru.coder and has a redirect
-// code, then the error value is used as a redirection.
+// If the returning error is a zgo.at/guru.coder and has a redirect code, then
+// the error value is used as a redirection.
 func Filter(f filterFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

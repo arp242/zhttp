@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/teamwork/guru"
+	"zgo.at/guru"
 	"zgo.at/zlog"
 )
 

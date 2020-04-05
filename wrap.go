@@ -100,7 +100,7 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// A github.com/teamwork/guru error with an embedded status code.
+		// A zgo.at/guru error with an embedded status code.
 		var stErr coder
 		if errors.As(err, &stErr) {
 			ErrPage(w, r, stErr.Code(), stErr)

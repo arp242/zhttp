@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/monoculum/formam"
-	"github.com/teamwork/guru"
+	"zgo.at/guru"
 	"zgo.at/zlog"
 )
 
