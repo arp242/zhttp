@@ -3,6 +3,7 @@ package zhttp
 import (
 	"fmt"
 	"net/http"
+	"runtime/debug"
 )
 
 // TODO: https://github.com/Teamwork/middleware/blob/master/rescue/rescue.go
@@ -20,6 +21,7 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 					err = fmt.Errorf("panic: %+v", rec)
 				}
 
+				err = fmt.Errorf("%w\n%s", err, debug.Stack())
 				ErrPage(w, r, 500, err)
 			}()
 

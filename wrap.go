@@ -35,7 +35,9 @@ var ErrPage = DefaultErrPage
 
 // TODO: make it easy to hide errors on production.
 func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported error) {
-	w.WriteHeader(code)
+	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		w.WriteHeader(code)
+	}
 
 	if code >= 500 {
 		zlog.Field("code", ErrorCode(reported)).FieldsRequest(r).Error(reported)
