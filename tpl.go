@@ -5,9 +5,11 @@ import (
 	"errors"
 	"html/template"
 	"io"
-	"log"
+	"path/filepath"
 	"strings"
 	"sync"
+
+	"zgo.at/zlog"
 )
 
 // TplPath is the path to template files.
@@ -59,9 +61,18 @@ func NewTpl() *template.Template {
 
 // ReloadTpl reloads the templates.
 func ReloadTpl() {
-	t, err := NewTpl().ParseGlob(TplPath + "/*.gohtml")
+	html, err := filepath.Glob(TplPath + "/*.gohtml")
 	if err != nil {
-		log.Print(err)
+		zlog.Print(err)
+	}
+	txt, err := filepath.Glob(TplPath + "/*.gotxt")
+	if err != nil {
+		zlog.Print(err)
+	}
+
+	t, err := NewTpl().ParseFiles(append(html, txt...)...)
+	if err != nil {
+		zlog.Error(err)
 	}
 	tpl.set(t)
 }

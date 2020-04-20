@@ -17,9 +17,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"golang.org/x/sync/singleflight"
+	"zgo.at/zhttp"
 	"zgo.at/zlog"
 )
 
@@ -30,12 +31,14 @@ var (
 
 // Send an email.
 func Send(subject string, from mail.Address, to []mail.Address, body string) error {
+	_ = zhttp.ExecuteTpl
 	msg := format(subject, from, to, body)
 	toList := make([]string, len(to))
 	for i := range to {
 		toList[i] = to[i].Address
 	}
 
+	var err error
 	switch SMTP {
 	case "stdout":
 		if Print {
@@ -44,25 +47,57 @@ func Send(subject string, from mail.Address, to []mail.Address, body string) err
 				strings.Replace(strings.TrimSpace(string(msg)), "\r\n", "\r\n║ ", -1) +
 				"\n╚══════════" + l + "\n")
 		}
-		return nil
 	case "":
-		return sendMail(subject, from, toList, msg)
+		err = sendMail(subject, from, toList, msg)
 	default:
-		return sendRelay(subject, from, toList, msg)
+		err = sendRelay(subject, from, toList, msg)
 	}
+
+	if err != nil {
+		return fmt.Errorf("zmail.Send: %w", err)
+	}
+	return nil
 }
 
-var hostname singleflight.Group
+var deHTML = strings.NewReplacer(
+	"&lt;", "<",
+	"&gt;", ">",
+	"&amp;", "&",
+	"&quot;", `"`)
+
+func SendTemplate(subject string, from mail.Address, to []mail.Address, tplName string, tplArgs interface{}) error {
+	body, err := zhttp.ExecuteTpl(tplName, tplArgs)
+	if err != nil {
+		return fmt.Errorf("zmail.SendTemplate: %q: %w", tplName, err)
+	}
+
+	err = Send(subject, from, to, deHTML.Replace(string(body)))
+	if err != nil {
+		return fmt.Errorf("zmail.SendTemplate: %w", err)
+	}
+	return nil
+
+}
+
+var hostname sync.Once
 
 // Send direct.
 func sendMail(subject string, from mail.Address, to []string, body []byte) error {
-	x, _, _ := hostname.Do("hostname", func() (interface{}, error) {
-		return os.Hostname()
+	hello := "localhost"
+	hostname.Do(func() {
+		var err error
+		hello, err = os.Hostname()
+		if err != nil {
+			zlog.Error(err)
+		}
 	})
-	hello := x.(string)
 
 	go func() {
 		for _, t := range to {
+			zlog.Module("zmail").Fields(zlog.F{
+				"subject": subject,
+				"to":      t,
+			}).Debugf("sendMail")
 			domain := t[strings.LastIndex(t, "@")+1:]
 			mxs, err := net.LookupMX(domain)
 
@@ -178,6 +213,10 @@ func sendRelay(subject string, from mail.Address, to []string, body []byte) erro
 			auth = smtp.PlainAuth("", user, pw, host)
 		}
 
+		zlog.Module("zmail").Fields(zlog.F{
+			"subject": subject,
+			"to":      to,
+		}).Debugf("sendRelay")
 		err := smtp.SendMail(srv.Host, auth, from.Address, to, body)
 		if err != nil {
 			zlog.Fields(zlog.F{
