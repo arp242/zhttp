@@ -24,6 +24,7 @@ var FuncMap = template.FuncMap{
 	"if2":          Tif2,
 	"has_prefix":   ThasPrefix,
 	"has_suffix":   ThasSuffix,
+	"substr":       Tsubstr,
 	"option_value": ToptionValue,
 	"checkbox":     Tcheckbox,
 	"pp":           Tpp,
@@ -105,6 +106,17 @@ func ThasPrefix(s, prefix string) bool {
 // ThasSuffix tests whether the string s ends with suffix.
 func ThasSuffix(s, suffix string) bool {
 	return strings.HasSuffix(s, suffix)
+}
+
+// Tsubstr returns part of a string.
+func Tsubstr(s string, i, j int) string {
+	if i == -1 {
+		return s[:j]
+	}
+	if j == -1 {
+		return s[i:]
+	}
+	return s[i:j]
 }
 
 // Tif2 returns yes if cond is true, and no otherwise.
