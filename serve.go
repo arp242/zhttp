@@ -52,6 +52,9 @@ func Serve(flags uint8, server *http.Server) {
 		}
 		if err != nil && err != http.ErrServerClosed {
 			zlog.Errorf("zhttp.Serve: %s", err)
+			if errors.Is(err, os.ErrPermission) {
+				os.Exit(1)
+			}
 		}
 	}()
 
