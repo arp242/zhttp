@@ -18,7 +18,8 @@ func Unpanic(prod bool) func(http.Handler) http.Handler {
 
 				err, ok := rec.(error)
 				if !ok {
-					err = fmt.Errorf("panic: %+v", rec)
+					err = fmt.Errorf("panic at %s %s%s: %+v\n\nForm: %#v\nHeaders: %#v\n",
+						r.Method, r.Host, r.RequestURI, rec, r.Form, r.Header)
 				}
 
 				err = fmt.Errorf("%w\n%s", err, debug.Stack())
