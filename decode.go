@@ -43,9 +43,15 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 	case ct == "application/json":
 		c = ContentJSON
 		err = json.NewDecoder(r.Body).Decode(dst)
-	case ct == "application/x-www-form-urlencoded" || ct == "multipart/form-data":
+	case ct == "application/x-www-form-urlencoded":
 		c = ContentForm
 		err = r.ParseForm()
+		if err == nil {
+			err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
+		}
+	case ct == "multipart/form-data":
+		c = ContentForm
+		err = r.ParseMultipartForm(32 << 20) // 32MB, http.defaultMaxMemory
 		if err == nil {
 			err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
 		}

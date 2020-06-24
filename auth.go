@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"zgo.at/zhttp/ctxkey"
@@ -79,7 +80,12 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 			// Check CSRF.
 			switch r.Method {
 			case http.MethodDelete, http.MethodPatch, http.MethodPost, http.MethodPut:
-				err := r.ParseForm()
+				var err error
+				if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+					err = r.ParseMultipartForm(32 << 20) // 32MB, http.defaultMaxMemory
+				} else {
+					err = r.ParseForm()
+				}
 				if err != nil {
 					w.WriteHeader(500)
 					fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: err
