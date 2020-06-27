@@ -2,7 +2,6 @@ package zhttp
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"hash/fnv"
 	"io"
@@ -10,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zgo.at/json"
 	"zgo.at/zlog"
 )
 

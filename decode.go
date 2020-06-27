@@ -1,7 +1,6 @@
 package zhttp
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/monoculum/formam"
 	"zgo.at/guru"
+	"zgo.at/json"
 	"zgo.at/zlog"
 )
 

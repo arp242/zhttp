@@ -2,12 +2,12 @@ package zhttp
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"zgo.at/json"
 	"zgo.at/zlog"
 )
 

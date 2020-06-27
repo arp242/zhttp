@@ -2,6 +2,8 @@ github.com/monoculum/formam v0.0.0-20200527175922-6f3cce7a46cf h1:DJ+VDi88ZNh+C3
 github.com/monoculum/formam v0.0.0-20200527175922-6f3cce7a46cf/go.mod h1:JKa2av1XVkGjhxdLS59nDoXa2JpmIHpnURWNbzCtXtc=
 zgo.at/guru v1.1.0 h1:hvMLOzPnv7XApwJZgxvFxBA8wb6RGPUw9lz8kmq450g=
 zgo.at/guru v1.1.0/go.mod h1:eltnfk6QwmM7ic3OLzmGMjEChP2iLuYXERyliREiA00=
+zgo.at/json v0.0.0-20200627042140-d5025253667f h1:o4XL0oDtAzxN+mkVCti8MYz5nLNfbrl17I78rqLWQrk=
+zgo.at/json v0.0.0-20200627042140-d5025253667f/go.mod h1:DUuNIRpNC7/cup+Gy0qhwQEjjlLFXXRZ04VnVv9bf3E=
 zgo.at/zlog v0.0.0-20200404052423-adffcc8acd57 h1:sIuh9IpccNlzMsmAvF7EPT87/Ab2XdUJHizsMxbQgM4=
 zgo.at/zlog v0.0.0-20200404052423-adffcc8acd57/go.mod h1:YkLAQZjLsp1RqWHn8SJokHzXyYU+6FZjM4GNY64IKME=
 zgo.at/ztest v0.0.0-20200316134318-cfad86d80b41 h1:2vR+4hRs2YI2Lcm68AjHLSOHxQy/3XJ/b2nCV/dCrxs=

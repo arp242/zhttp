@@ -1,12 +1,13 @@
 package zhttp
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"strconv"
 	"strings"
 	"time"
+
+	"zgo.at/json"
 )
 
 // FuncMap contains all the template functions.
