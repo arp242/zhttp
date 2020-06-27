@@ -3,6 +3,7 @@ package zhttp
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -67,7 +68,7 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		}
 		err = nil
 	}
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return 0, fmt.Errorf("zhttp.Decode: %w", err)
 	}
 	return c, nil
