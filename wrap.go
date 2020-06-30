@@ -3,6 +3,7 @@ package zhttp
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"io"
 	"net/http"
@@ -20,6 +21,9 @@ type (
 	}
 	errorJSON interface {
 		ErrorJSON() ([]byte, error)
+	}
+	stackTracer interface {
+		StackTrace() string
 	}
 )
 
@@ -39,8 +43,13 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 		w.WriteHeader(code)
 	}
 
+	userErr := reported
 	if code >= 500 {
 		zlog.Field("code", ErrorCode(reported)).FieldsRequest(r).Error(reported)
+
+		userErr = fmt.Errorf(
+			`unexpected error code ‘%s’; this has been reported for investigation`,
+			ErrorCode(reported))
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
@@ -50,12 +59,15 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 			j   []byte
 			err error
 		)
-		if jErr, ok := reported.(json.Marshaler); ok {
+
+		if jErr, ok := userErr.(json.Marshaler); ok {
 			j, err = jErr.MarshalJSON()
-		} else if jErr, ok := reported.(errorJSON); ok {
+		} else if jErr, ok := userErr.(errorJSON); ok {
 			j, err = jErr.ErrorJSON()
+		} else if _, ok := userErr.(stackTracer); ok {
+			j, err = json.Marshal(map[string]string{"error": errors.Unwrap(userErr).Error()})
 		} else {
-			j, err = json.Marshal(map[string]string{"error": reported.Error()})
+			j, err = json.Marshal(map[string]string{"error": userErr.Error()})
 		}
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
@@ -73,7 +85,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 		err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
 			Code  int
 			Error error
-		}{code, reported})
+		}{code, userErr})
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
 		}
