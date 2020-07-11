@@ -59,7 +59,7 @@ func HostRoute(routers map[string]http.Handler) http.HandlerFunc {
 // RedirectHost redirects all requests to the destination host.
 //
 // Mainly intended for redirecting "example.com" to "www.example.com", or vice
-// verse. The full URL is preserved, so "example.com/a?x is redirected to
+// versa. The full URL is preserved, so "example.com/a?x is redirected to
 // www.example.com/a?x
 //
 // Only GET requests are redirected.

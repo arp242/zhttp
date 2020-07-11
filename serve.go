@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 
 	"zgo.at/zlog"
 )
@@ -24,6 +25,12 @@ const (
 // also try to redirect port 80 to the TLS server, but will gracefully fail if
 // the permission for this is denied.
 func Serve(flags uint8, server *http.Server) {
+	// Go uses :80 to listen on all addresses, this makes sure that the
+	// common-ish "*:80" is also accepted.
+	if strings.HasPrefix(server.Addr, "*:") {
+		server.Addr = server.Addr[1:]
+	}
+
 	consClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
