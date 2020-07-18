@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -13,7 +14,7 @@ import (
 type Static struct {
 	dir          string
 	domain       string
-	cacheControl string
+	cacheControl map[string]int
 	packed       map[string][]byte
 }
 
@@ -40,25 +41,24 @@ const (
 //
 // The domain parameter is used for CORS.
 //
-// Cache is set to the Cache-Control: max-age parameter, or use one of the
-// special Cache* constants.
+// The Cache-Control header is set with the cache parameter, which is a path →
+// cache mapping. The path is matched with filepath.Match() and the key "" is
+// used if nothing matches. There is no guarantee about the order if multiple
+// keys match. One of special Cache* constants can be used.
 //
 // If packed is not nil then all files will be served from the map, and the
 // filesystem is never accessed. This is useful for self-contained production builds.
-func NewStatic(dir, domain string, cache int, packed map[string][]byte) Static {
-	cc := ""
-	switch cache {
-	case CacheNoHeader:
-		cc = ""
-	case CacheNoCache:
-		cc = "no-cache"
-	case CacheNoStore:
-		cc = "no-store,no-cache"
-	default:
-		cc = fmt.Sprintf("public, max-age=%d", cache)
+func NewStatic(dir, domain string, cache map[string]int, packed map[string][]byte) Static {
+	if cache != nil {
+		for k := range cache {
+			_, err := filepath.Match(k, "")
+			if err != nil {
+				panic(fmt.Sprintf("zhttp.NewStatic: invalid pattern in cache map: %s", err))
+			}
+		}
 	}
 
-	return Static{dir: dir, domain: domain, cacheControl: cc, packed: packed}
+	return Static{dir: dir, domain: domain, cacheControl: cache, packed: packed}
 }
 
 var Static404 = func(w http.ResponseWriter, r *http.Request) {
@@ -89,15 +89,57 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var err error
 		d, err = ioutil.ReadFile(path)
 		if err != nil {
+			if os.IsNotExist(err) {
+				Static404(w, r)
+				return
+			}
 			http.Error(w, err.Error(), 500)
 			return
 		}
 	}
 
-	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(path)))
+	ct := mime.TypeByExtension(filepath.Ext(path))
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", ct)
 	w.Header().Set("Access-Control-Allow-Origin", s.domain)
-	if s.cacheControl != "" {
-		w.Header().Set("Cache-Control", s.cacheControl)
+	if s.cacheControl != nil {
+		cache := -100
+		c, ok := s.cacheControl[r.URL.Path]
+		if ok {
+			cache = c
+		}
+		if cache == -100 {
+			for k, v := range s.cacheControl {
+				match, _ := filepath.Match(k, r.URL.Path)
+				if match {
+					cache = v
+					break
+				}
+			}
+		}
+		if cache == -100 {
+			cache = s.cacheControl[""]
+		}
+
+		// TODO: use a more clever scheme where max-age and no-{cache,store} can be
+		// set independently. For example, we can use the top 3 bits as a bitmask,
+		// clear those if set, and use the rest as a max-age.
+		cc := ""
+		switch cache {
+		case CacheNoHeader:
+			cc = ""
+		case CacheNoCache:
+			cc = "no-cache"
+		case CacheNoStore:
+			cc = "no-store,no-cache"
+		default:
+			cc = fmt.Sprintf("public, max-age=%d", cache)
+		}
+		if cc != "" {
+			w.Header().Set("Cache-Control", cc)
+		}
 	}
 	w.WriteHeader(200)
 	w.Write(d)

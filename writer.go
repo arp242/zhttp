@@ -108,13 +108,10 @@ func (b *basicWriter) maybeWriteHeader() {
 	}
 }
 
-type flushWriter struct {
-	basicWriter
-}
+type flushWriter struct{ basicWriter }
 
 func (f *flushWriter) Flush() {
 	f.wroteHeader = true
-
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }
@@ -123,13 +120,10 @@ func (f *flushWriter) Flush() {
 // http.Flusher, http.Hijacker, and io.ReaderFrom. It exists for the common case
 // of wrapping the http.ResponseWriter that package http gives you, in order to
 // make the proxied object support the full method set of the proxied object.
-type httpFancyWriter struct {
-	basicWriter
-}
+type httpFancyWriter struct{ basicWriter }
 
 func (f *httpFancyWriter) Flush() {
 	f.wroteHeader = true
-
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }
@@ -160,13 +154,10 @@ func (f *httpFancyWriter) ReadFrom(r io.Reader) (int64, error) {
 // http.Flusher, and io.ReaderFrom. It exists for the common case
 // of wrapping the http.ResponseWriter that package http gives you, in order to
 // make the proxied object support the full method set of the proxied object.
-type http2FancyWriter struct {
-	basicWriter
-}
+type http2FancyWriter struct{ basicWriter }
 
 func (f *http2FancyWriter) Flush() {
 	f.wroteHeader = true
-
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }

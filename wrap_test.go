@@ -20,6 +20,8 @@ func (err errJSON) Error() string              { return "JSON error 2" }
 func (err errJSON) ErrorJSON() ([]byte, error) { return []byte("[2]"), nil }
 
 func TestErrPage(t *testing.T) {
+	t.Skip() // Doesn't test all that much anymore, need to expand to also check log.
+
 	tests := []struct {
 		name     string
 		code     int
