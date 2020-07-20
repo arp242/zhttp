@@ -1,7 +1,7 @@
 [![This project is considered experimental](https://img.shields.io/badge/Status-experimental-red.svg)](https://arp242.net/status/experimental)
 [![Build Status](https://travis-ci.org/zgoat/zhttp.svg?branch=master)](https://travis-ci.org/zgoat/zhttp)
 [![codecov](https://codecov.io/gh/zgoat/zhttp/branch/master/graph/badge.svg)](https://codecov.io/gh/zgoat/zhttp)
-[![GoDoc](https://godoc.org/github.com/zgoat/zhttp?status.svg)](https://pkg.go.dev/github.com/zgoat/zhttp)
+[![GoDoc](https://godoc.org/github.com/zgoat/zhttp?status.svg)](https://pkg.go.dev/zgo.at/zhttp)
 
 Martin's HTTP package: It's not a "framework", but just a collection of
 functions for building HTTP services.
