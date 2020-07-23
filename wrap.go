@@ -165,10 +165,21 @@ func Text(w http.ResponseWriter, s string) error {
 	return String(w, s)
 }
 
+// JSON writes i as JSON. If i is a string or []byte it's assumed this is
+// already JSON-encoded and sends it as-is.
 func JSON(w http.ResponseWriter, i interface{}) error {
-	j, err := json.Marshal(i)
-	if err != nil {
-		return err
+	var j []byte
+	switch ii := i.(type) {
+	case string:
+		j = []byte(ii)
+	case []byte:
+		j = ii
+	default:
+		var err error
+		j, err = json.Marshal(i)
+		if err != nil {
+			return err
+		}
 	}
 
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
