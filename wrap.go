@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"zgo.at/json"
+	"zgo.at/zhttp/ztpl"
 	"zgo.at/zlog"
 )
 
@@ -78,11 +79,11 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 		fallthrough
 
 	default:
-		if tpl == nil {
+		if !ztpl.IsLoaded() {
 			return
 		}
 
-		err := tpl.ExecuteTemplate(w, "error.gohtml", struct {
+		err := ztpl.Execute(w, "error.gohtml", struct {
 			Code  int
 			Error error
 		}{code, userErr})
@@ -195,7 +196,7 @@ func Template(w http.ResponseWriter, name string, data interface{}) error {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(200)
 	}
-	return tpl.ExecuteTemplate(w, name, data)
+	return ztpl.Execute(w, name, data)
 }
 
 // MovedPermanently redirects to the given URL.

@@ -1,4 +1,4 @@
-package zhttp
+package tplfunc
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"zgo.at/ztest"
 )
 
-func TestTmap(t *testing.T) {
+func TestMap(t *testing.T) {
 	tests := []struct {
 		in   []interface{}
 		want map[string]interface{}
@@ -20,7 +20,7 @@ func TestTmap(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			out := Tmap(tt.in...)
+			out := Map(tt.in...)
 			if d := ztest.Diff(fmt.Sprintf("%+v", out), fmt.Sprintf("%+v", tt.want)); d != "" {
 				t.Errorf(d)
 			}
@@ -28,7 +28,7 @@ func TestTmap(t *testing.T) {
 	}
 }
 
-func TestTstring(t *testing.T) {
+func TestString(t *testing.T) {
 	tests := []struct {
 		in   interface{}
 		want string
@@ -43,7 +43,7 @@ func TestTstring(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			out := Tstring(tt.in)
+			out := String(tt.in)
 			if out != tt.want {
 				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.want)
 			}
@@ -51,7 +51,7 @@ func TestTstring(t *testing.T) {
 	}
 }
 
-func TestTnformat(t *testing.T) {
+func TestNumber(t *testing.T) {
 	tests := []struct {
 		in    int
 		inSep rune
@@ -72,7 +72,7 @@ func TestTnformat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%v", tt.in), func(t *testing.T) {
-			out := Tnformat(tt.in, tt.inSep)
+			out := Number(tt.in, tt.inSep)
 			if out != tt.want {
 				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.want)
 			}
@@ -80,25 +80,25 @@ func TestTnformat(t *testing.T) {
 	}
 }
 
-func TestTarithmetic(t *testing.T) {
+func TestArithmetic(t *testing.T) {
 	tests := []struct {
 		f    func(int, int, ...int) int
 		in   []int
 		want int
 	}{
-		{Tsum, []int{2, 1}, 3},
-		{Tsum, []int{2, 2, 1}, 5},
-		{Tsum, []int{2, 2, -4}, 0},
+		{Sum, []int{2, 1}, 3},
+		{Sum, []int{2, 2, 1}, 5},
+		{Sum, []int{2, 2, -4}, 0},
 
-		{Tsub, []int{2, 1}, 1},
-		{Tsub, []int{2, 2, 1}, -1},
-		{Tsub, []int{2, 2, -5}, 5},
+		{Sub, []int{2, 1}, 1},
+		{Sub, []int{2, 2, 1}, -1},
+		{Sub, []int{2, 2, -5}, 5},
 
-		{Tmult, []int{2, 2}, 4},
-		{Tmult, []int{2, 2, 2}, 8},
+		{Mult, []int{2, 2}, 4},
+		{Mult, []int{2, 2, 2}, 8},
 
-		//{Tdiv, []int{8, 2}, 4},
-		//{Tdiv, []int{8, 2, 2}, 2},
+		//{Div, []int{8, 2}, 4},
+		//{Div, []int{8, 2, 2}, 2},
 	}
 
 	for i, tt := range tests {
@@ -111,7 +111,7 @@ func TestTarithmetic(t *testing.T) {
 	}
 }
 
-func TestToptionValue(t *testing.T) {
+func TestOptionValue(t *testing.T) {
 	tests := []struct {
 		current, value, want string
 	}{
@@ -123,7 +123,7 @@ func TestToptionValue(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			out := ToptionValue(tt.current, tt.value)
+			out := OptionValue(tt.current, tt.value)
 			want := template.HTMLAttr(tt.want)
 			if out != want {
 				t.Errorf("\nout:  %#v\nwant: %#v\n", out, want)

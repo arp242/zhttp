@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"zgo.at/guru"
+	"zgo.at/zhttp/ztpl"
 	"zgo.at/zlog"
 )
 
@@ -59,7 +60,7 @@ func TestErrPage(t *testing.T) {
 		},
 	}
 
-	InitTpl(nil)
+	ztpl.Init("tpl", nil)
 	zlog.Config.Outputs = []zlog.OutputFunc{} // Don't care about logs; don't spam.
 
 	for _, tt := range tests {
