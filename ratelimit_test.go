@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"zgo.at/ztest"
+	"zgo.at/zstd/ztest"
 )
 
 type handle struct{}

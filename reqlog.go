@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Log requests to stdout.
 func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Handler {
 	if timeFmt == "" {
 		timeFmt = "15:04:05 "

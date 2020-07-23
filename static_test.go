@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"zgo.at/ztest"
+	"zgo.at/zstd/ztest"
 )
 
 func TestStatic(t *testing.T) {

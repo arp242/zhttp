@@ -30,7 +30,8 @@ type User interface {
 	GetToken() string
 }
 
-func SetCookie(w http.ResponseWriter, val, domain string) {
+// SetAuthCookie sets the authentication cookie to val for the given domain.
+func SetAuthCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
 		Domain:   RemovePort(domain),
 		Name:     cookieKey,
@@ -43,7 +44,12 @@ func SetCookie(w http.ResponseWriter, val, domain string) {
 	})
 }
 
-func ClearCookie(w http.ResponseWriter, domain string) {
+// ClearAuthCookie sends an empty auth cookie with an expiry in the past for the
+// given domain, clearing it in the client.
+//
+// Make sure the domain matches with what was sent before *exactly*, or the
+// browser will set a second cookie.
+func ClearAuthCookie(w http.ResponseWriter, domain string) {
 	http.SetCookie(w, &http.Cookie{
 		Domain:  RemovePort(domain),
 		Name:    cookieKey,
@@ -53,6 +59,7 @@ func ClearCookie(w http.ResponseWriter, domain string) {
 	})
 }
 
+// Auth adds user auth to an endpoint.
 func Auth(load loadFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

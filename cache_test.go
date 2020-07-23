@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"zgo.at/ztest"
+	"zgo.at/zstd/ztest"
 )
 
 func TestNoCache(t *testing.T) {

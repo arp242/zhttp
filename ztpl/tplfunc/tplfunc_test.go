@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"testing"
 
-	"zgo.at/ztest"
+	"zgo.at/zstd/ztest"
 )
 
 func TestMap(t *testing.T) {

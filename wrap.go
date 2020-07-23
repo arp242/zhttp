@@ -135,39 +135,48 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func Stream(w http.ResponseWriter, fp io.Reader) error {
+func writeStatus(w http.ResponseWriter, code int, ct string) {
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
+		if ct != "" && w.Header().Get("Content-Type") == "" {
+			w.Header().Set("Content-Type", ct)
+		}
 		w.WriteHeader(200)
 	}
+}
+
+// Stream any data to the client as-is.
+func Stream(w http.ResponseWriter, fp io.Reader) error {
+	writeStatus(w, 200, "")
 	_, err := io.Copy(w, fp)
 	return err
 }
 
+// Bytes sends the bytes as-is to the client.
 func Bytes(w http.ResponseWriter, b []byte) error {
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.WriteHeader(200)
-	}
+	writeStatus(w, 200, "")
 	w.Write(b)
 	return nil
 }
 
+// String sends the string as-is to the client.
 func String(w http.ResponseWriter, s string) error {
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.WriteHeader(200)
-	}
+	writeStatus(w, 200, "")
 	w.Write([]byte(s))
 	return nil
 }
 
+// Text sends the string to the client, setting the Content-Type to text/plain
+// (unless it's already set).
 func Text(w http.ResponseWriter, s string) error {
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.Header().Set("Content-Type", "text/plain")
-	}
+	writeStatus(w, 200, "text/plain; charset=utf-8")
 	return String(w, s)
 }
 
-// JSON writes i as JSON. If i is a string or []byte it's assumed this is
-// already JSON-encoded and sends it as-is.
+// JSON writes i as JSON, setting the Content-Type to application/json (unless
+// it's already set).
+//
+// If i is a string or []byte it's assumed this is already JSON-encoded and
+// sent it as-is rather than sending a JSON-fied string.
 func JSON(w http.ResponseWriter, i interface{}) error {
 	var j []byte
 	switch ii := i.(type) {
@@ -183,32 +192,28 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 		}
 	}
 
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
-	}
+	writeStatus(w, 200, "application/json; charset=utf-8")
 	w.Write(j)
 	return nil
 }
 
+// Template renders a template and sends it to the client, setting the
+// Content-Type to text/html (unless it's already set).
+//
+// This requires ztpl to be set up.
 func Template(w http.ResponseWriter, name string, data interface{}) error {
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(200)
-	}
+	writeStatus(w, 200, "text/html; charset=utf-8")
 	return ztpl.Execute(w, name, data)
 }
 
-// MovedPermanently redirects to the given URL.
+// MovedPermanently redirects to the given URL with a 301.
 func MovedPermanently(w http.ResponseWriter, url string) error {
 	w.Header().Set("Location", url)
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.WriteHeader(301)
-	}
+	w.WriteHeader(301)
 	return nil
 }
 
-// SeeOther redirects to the given URL.
+// SeeOther redirects to the given URL with a 303.
 //
 // "A 303 response to a GET request indicates that the origin server does not
 // have a representation of the target resource that can be transferred by the
@@ -218,8 +223,6 @@ func MovedPermanently(w http.ResponseWriter, url string) error {
 // recipients without implying that it represents the original target resource."
 func SeeOther(w http.ResponseWriter, url string) error {
 	w.Header().Set("Location", url)
-	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.WriteHeader(303)
-	}
+	w.WriteHeader(303)
 	return nil
 }
