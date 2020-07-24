@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"strings"
+	"syscall"
 
 	"zgo.at/zlog"
 )
@@ -24,7 +25,18 @@ const (
 // The server will use TLS if the http.Server has a valid TLSConfig; it will
 // also try to redirect port 80 to the TLS server, but will gracefully fail if
 // the permission for this is denied.
-func Serve(flags uint8, server *http.Server, done func()) {
+//
+// This will return a channel which will send a value after the server is set up
+// and ready to accept connections, and will be closed after the server is shut
+// down and stopped accepting connections:
+//
+//   ch := zhttp.Serve(..)
+//   <-ch
+//   fmt.Println("Ready to serve!")
+//
+//   <-ch
+//   cleanup()
+func Serve(flags uint8, server *http.Server) chan (struct{}) {
 	abs, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		abs = os.Args[0]
@@ -50,25 +62,19 @@ func Serve(flags uint8, server *http.Server, done func()) {
 		}
 		os.Exit(1)
 	}
-	defer ln.Close()
 
-	consClosed := make(chan struct{})
+	ch := make(chan struct{}, 1)
 	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
-		<-sigint
+		s := make(chan os.Signal, 1)
+		signal.Notify(s, syscall.SIGHUP, syscall.SIGTERM, os.Interrupt /*SIGINT*/)
+		<-s
 
-		shutdown := make(chan struct{})
-		go func() {
-			err := server.Shutdown(context.Background())
-			if err != nil {
-				zlog.Errorf("server.Shutdown: %s", err)
-			}
-			shutdown <- struct{}{}
-		}()
-
-		<-shutdown
-		close(consClosed)
+		err := server.Shutdown(context.Background())
+		if err != nil {
+			zlog.Errorf("server.Shutdown: %s", err)
+		}
+		ln.Close()
+		close(ch)
 	}()
 
 	go func() {
@@ -90,16 +96,15 @@ func Serve(flags uint8, server *http.Server, done func()) {
 			if err != nil && err != http.ErrServerClosed {
 				zlog.Errorf("zhttp.Serve: ListenAndServe redirect 80: %s", err)
 				if errors.Is(err, os.ErrPermission) {
-					fmt.Fprintf(os.Stderr, "WARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\n", port)
+					fmt.Fprintf(os.Stderr,
+						"\x1b[1mWARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\x1b[0m\n",
+						port)
 					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try: sudo setcap 'cap_net_bind_service=+ep' %s\n", abs)
 				}
 			}
 		}()
 	}
 
-	if done != nil {
-		done()
-	}
-
-	<-consClosed
+	ch <- struct{}{}
+	return ch
 }
