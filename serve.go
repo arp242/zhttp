@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"zgo.at/zlog"
 )
@@ -36,7 +37,7 @@ const (
 //
 //   <-ch
 //   cleanup()
-func Serve(flags uint8, server *http.Server) chan (struct{}) {
+func Serve(flags uint8, testMode bool, server *http.Server) chan (struct{}) {
 	abs, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		abs = os.Args[0]
@@ -67,6 +68,18 @@ func Serve(flags uint8, server *http.Server) chan (struct{}) {
 	go func() {
 		s := make(chan os.Signal, 1)
 		signal.Notify(s, syscall.SIGHUP, syscall.SIGTERM, os.Interrupt /*SIGINT*/)
+
+		// TODO: might be even better to expose s so tests can send their own
+		// signals whenever they're ready.
+		if testMode {
+			fmt.Println("TEST MODE, SHUTTING DOWN IN A SECOND")
+			go func() {
+				for {
+					time.Sleep(1 * time.Second)
+					s <- os.Interrupt
+				}
+			}()
+		}
 		<-s
 
 		err := server.Shutdown(context.Background())
