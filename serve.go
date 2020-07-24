@@ -27,8 +27,8 @@ const (
 // the permission for this is denied.
 //
 // This will return a channel which will send a value after the server is set up
-// and ready to accept connections, and will be closed after the server is shut
-// down and stopped accepting connections:
+// and ready to accept connections, and send another valiue after the server is
+// shut down and stopped accepting connections:
 //
 //   ch := zhttp.Serve(..)
 //   <-ch
@@ -74,6 +74,7 @@ func Serve(flags uint8, server *http.Server) chan (struct{}) {
 			zlog.Errorf("server.Shutdown: %s", err)
 		}
 		ln.Close()
+		ch <- struct{}{}
 		close(ch)
 	}()
 
