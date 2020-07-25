@@ -39,8 +39,9 @@ func WrapWriter(next http.Handler) http.Handler {
 var ErrPage = DefaultErrPage
 
 func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported error) {
+	hasStatus := true
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
-		w.WriteHeader(code)
+		hasStatus = false
 	}
 
 	userErr := reported
@@ -54,6 +55,10 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
 	switch {
 	case strings.HasPrefix(ct, "application/json"):
+		if !hasStatus {
+			w.WriteHeader(code)
+		}
+
 		var (
 			j   []byte
 			err error
@@ -74,15 +79,25 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 		w.Write(j)
 
 	case strings.HasPrefix(ct, "text/plain"):
+		if !hasStatus {
+			w.WriteHeader(code)
+		}
 		fmt.Fprintf(w, "Error %d: %s", code, userErr)
 
-	case ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/"):
-		fallthrough
-
-	case !ztpl.HasTemplate("error.gohtml"):
-		fmt.Fprintf(w, "<p>Error %d: %s</p>", code, userErr)
+	case !hasStatus && r.Referer() != "" && ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/"):
+		FlashError(w, userErr.Error())
+		SeeOther(w, r.Referer())
 
 	default:
+		if !hasStatus {
+			w.WriteHeader(code)
+		}
+
+		if !ztpl.HasTemplate("error.gohtml") {
+			fmt.Fprintf(w, "<p>Error %d: %s</p>", code, userErr)
+			return
+		}
+
 		err := ztpl.Execute(w, "error.gohtml", struct {
 			Code  int
 			Error error
