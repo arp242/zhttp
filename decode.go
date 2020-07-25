@@ -2,7 +2,6 @@ package zhttp
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -22,6 +21,27 @@ const (
 
 // LogUnknownFields tells Decode() to issue an error log on unknown fields.
 var LogUnknownFields bool
+
+type DecodeError struct {
+	ct  uint8
+	err error
+}
+
+func (e DecodeError) Unwrap() error { return e.err }
+func (e DecodeError) Error() string {
+	var s string
+	switch e.ct {
+	case ContentQuery:
+		s += "invalid query parameters: "
+	case ContentForm:
+		s += "invalid form data: "
+	case ContentJSON:
+		s += "invalid JSON: "
+	case ContentUnsupported:
+		return "unsupported Content-Type"
+	}
+	return s + e.err.Error()
+}
 
 // Decode request parameters from a form, JSON body, or query parameters.
 //
@@ -69,7 +89,7 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		err = nil
 	}
 	if err != nil && err != io.EOF {
-		return 0, fmt.Errorf("zhttp.Decode: %w", err)
+		return 0, &DecodeError{c, err}
 	}
 	return c, nil
 }

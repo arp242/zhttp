@@ -38,7 +38,6 @@ func WrapWriter(next http.Handler) http.Handler {
 
 var ErrPage = DefaultErrPage
 
-// TODO: make it easy to hide errors on production.
 func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported error) {
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
 		w.WriteHeader(code)
@@ -46,11 +45,10 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 
 	userErr := reported
 	if code >= 500 {
-		zlog.Field("code", ErrorCode(reported)).FieldsRequest(r).Error(reported)
-
+		zlog.Field("code", UserErrorCode(reported)).FieldsRequest(r).Error(reported)
 		userErr = fmt.Errorf(
 			`unexpected error code ‘%s’; this has been reported for investigation`,
-			ErrorCode(reported))
+			UserErrorCode(reported))
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
@@ -75,14 +73,16 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 		}
 		w.Write(j)
 
+	case strings.HasPrefix(ct, "text/plain"):
+		fmt.Fprintf(w, "Error %d: %s", code, userErr)
+
 	case ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/"):
 		fallthrough
 
-	default:
-		if !ztpl.IsLoaded() {
-			return
-		}
+	case !ztpl.HasTemplate("error.gohtml"):
+		fmt.Fprintf(w, "<p>Error %d: %s</p>", code, userErr)
 
+	default:
 		err := ztpl.Execute(w, "error.gohtml", struct {
 			Code  int
 			Error error
@@ -93,8 +93,8 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 	}
 }
 
-// ErrorCode gets a hash based on the error value.
-func ErrorCode(err error) string {
+// UserErrorCode gets a hash based on the error value.
+func UserErrorCode(err error) string {
 	if err == nil {
 		return ""
 	}
@@ -107,7 +107,7 @@ func ErrorCode(err error) string {
 // HandlerFunc function.
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
 
-// Wrap a http.HandlerFunc
+// Wrap a http.HandlerFunc and handle error returns.
 func Wrap(handler HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := handler(w, r)
@@ -115,23 +115,21 @@ func Wrap(handler HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// A zgo.at/guru error with an embedded status code.
-		var stErr coder
-		if errors.As(err, &stErr) {
-			ErrPage(w, r, stErr.Code(), stErr)
-			return
+		var (
+			stErr coder
+			dErr  *DecodeError
+			code  = 500
+		)
+		switch {
+		case errors.As(err, &stErr): // zgo.at/guru with an embedded status code.
+			code = stErr.Code()
+			err = stErr
+		case errors.As(err, &dErr): // Invalid parameters.
+			code = 400
+		case errors.Is(err, sql.ErrNoRows):
+			code = 404
 		}
-
-		switch err {
-		case sql.ErrNoRows:
-			ErrPage(w, r, 404, err)
-			return
-		}
-
-		// switch out := err.(type) {
-		// }
-
-		ErrPage(w, r, 500, err)
+		ErrPage(w, r, code, err)
 	}
 }
 

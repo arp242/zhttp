@@ -18,9 +18,15 @@ type LockedTpl struct {
 
 func (t *LockedTpl) Set(path string, tp *template.Template) {
 	t.Lock()
+	defer t.Unlock()
 	t.Path = path
 	t.t = tp
-	t.Unlock()
+}
+
+func (t *LockedTpl) Has(name string) bool {
+	t.Lock()
+	defer t.Unlock()
+	return t.t.Lookup(name) != nil
 }
 
 func (t *LockedTpl) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {

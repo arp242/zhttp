@@ -48,6 +48,8 @@ const (
 //
 // If packed is not nil then all files will be served from the map, and the
 // filesystem is never accessed. This is useful for self-contained production builds.
+//
+// TODO: this should use http.FileSystem.
 func NewStatic(dir, domain string, cache map[string]int, packed map[string][]byte) Static {
 	if cache != nil {
 		for k := range cache {

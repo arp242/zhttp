@@ -276,7 +276,6 @@ func Daterange(tz *time.Location, start, end time.Time) string {
 		return n(days) + " days ago–today"
 	}
 
-	// TODO: add (2 month, 14 days), (14 days), etc.
 	return start.Format(addYear(start, "Jan 2")) + "–" + end.Format(addYear(end, "Jan 2")) +
 		" (" + Duration(start, end) + ")"
 }
