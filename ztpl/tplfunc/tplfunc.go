@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"zgo.at/json"
+	"zgo.at/zstd/ztime"
 )
 
 // Add a new template function.
@@ -34,6 +35,8 @@ var FuncMap = template.FuncMap{
 	"map":          Map,
 	"option_value": OptionValue,
 	"checkbox":     Checkbox,
+	"daterange":    Daterange,
+	"duration":     Duration,
 }
 
 // DerefString dereferences a string pointer, returning "" if it's nil.
@@ -215,4 +218,114 @@ func Checkbox(current bool, name string) template.HTML {
 		<input type="checkbox" name="%s" id="%[1]s">
 		<input type="hidden" name="%[1]s" value="off">
 	`, template.HTMLEscapeString(name)))
+}
+
+var now = func() time.Time { return time.Now() }
+
+// Daterange shows the range from start to end as a human-readable
+// representation; e.g. "current week", "last week", "previous month", etc.
+//
+// It falls back to "Mon Jan 2 – Mon Jan 2" if there's no clear way to describe
+// it.
+func Daterange(tz *time.Location, start, end time.Time) string {
+	// Set the same time, to make comparisons easier.
+	today := ztime.StartOfDay(now().In(tz))
+	start = ztime.StartOfDay(start.In(today.Location()))
+	end = ztime.StartOfDay(end.In(today.Location()))
+
+	months, days := timeDiff(start, end)
+
+	n := strconv.Itoa
+	addYear := func(t time.Time, s string) string {
+		if t.Year() != today.Year() {
+			return s + " 2006"
+		}
+		return s
+	}
+
+	// Selected one full month, display as month name.
+	if months == 0 && start.Day() == 1 && ztime.LastInMonth(end) {
+		return start.Format(addYear(start, "January"))
+	}
+
+	// From start of a month to end of a month.
+	if months > 1 && start.Day() == 1 && ztime.LastInMonth(end) {
+		return start.Format(addYear(start, "January")) + "–" + end.Format(addYear(end, "January"))
+	}
+
+	if end.Equal(today) {
+		if months == 0 && days == 0 {
+			return "today"
+		}
+		if end.Equal(today) && months == 0 && days == 1 {
+			return "yesterday–today"
+		}
+		if start.Day() == end.Day() {
+			if months == 1 {
+				return n(months) + " month ago–today"
+			}
+			return n(months) + " months ago–today"
+		}
+		if days%7 == 0 {
+			w := n(days / 7)
+			if w == "1" {
+				return w + " week ago–today"
+			}
+			return w + " weeks ago–today"
+		}
+		return n(days) + " days ago–today"
+	}
+
+	// TODO: add (2 month, 14 days), (14 days), etc.
+	return start.Format(addYear(start, "Jan 2")) + "–" + end.Format(addYear(end, "Jan 2")) +
+		" (" + Duration(start, end) + ")"
+}
+
+// Durationgets a human-readable description of how long there is between two
+// dates, e.g. "6 days", "1 month", "3 weeks", etc.
+func Duration(start, end time.Time) string {
+	n := strconv.Itoa
+
+	months, days := timeDiff(start, end)
+	if months == 0 {
+		if days == 1 {
+			return "1 day"
+		}
+		if days == 7 {
+			return "1 week"
+		}
+		if days%7 == 0 {
+			return n(days/7) + " weeks"
+		}
+		return n(days) + " days"
+	}
+
+	s := n(months) + " month"
+	if months > 1 {
+		s += "s"
+	}
+	if days > 0 {
+		s += ", " + n(days) + " days"
+	}
+	return s
+}
+
+// Modified from https://stackoverflow.com/a/36531443/660921
+func timeDiff(a, b time.Time) (month, day int) {
+	y1, m1, d1 := a.Date()
+	y2, m2, d2 := b.Date()
+
+	month = int(m2-m1) + (int(y2-y1) * 12)
+	day = int(d2 - d1)
+
+	if day < 0 {
+		t := time.Date(y1, m1, 32, 0, 0, 0, 0, time.UTC) // days in month
+		day += 32 - t.Day()
+		month--
+	}
+	if month < 0 {
+		month += 12
+	}
+
+	return month, day
 }
