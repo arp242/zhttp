@@ -7,6 +7,7 @@ import (
 	"hash/fnv"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -163,6 +164,19 @@ func writeStatus(w http.ResponseWriter, code int, ct string) {
 		}
 		w.WriteHeader(200)
 	}
+}
+
+// File outputs a file on the disk.
+//
+// This does NO PATH NORMALISATION! People can enter "../../../../etc/passwd".
+// Make sure you sanitize your paths if they're from untrusted input.
+func File(w http.ResponseWriter, path string) error {
+	fp, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+	return Stream(w, fp)
 }
 
 // Stream any data to the client as-is.
