@@ -11,16 +11,22 @@ var Templates = new(LockedTpl)
 
 // Add a lock to template.Template for reloading in dev without race conditions.
 type LockedTpl struct {
-	sync.RWMutex
+	sync.Mutex
 	t    *template.Template
-	Path string
+	path string
 }
 
 func (t *LockedTpl) Set(path string, tp *template.Template) {
 	t.Lock()
 	defer t.Unlock()
-	t.Path = path
+	t.path = path
 	t.t = tp
+}
+
+func (t *LockedTpl) Path() string {
+	t.Lock()
+	defer t.Unlock()
+	return t.path
 }
 
 func (t *LockedTpl) Has(name string) bool {
@@ -30,11 +36,10 @@ func (t *LockedTpl) Has(name string) bool {
 }
 
 func (t *LockedTpl) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+	t.Lock()
+	defer t.Unlock()
 	if t == nil || t.t == nil {
 		return errors.New("ztpl.ExecuteTemplate: not initialized; call ztpl.Init()")
 	}
-
-	t.RLock()
-	defer t.RUnlock()
 	return t.t.ExecuteTemplate(wr, name, data)
 }

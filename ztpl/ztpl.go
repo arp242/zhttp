@@ -41,12 +41,12 @@ func New() *template.Template {
 // Errors are logged but not fatal! This is intentional as you really don't want
 // a simple typo to crash your app.
 func Reload() {
-	hp := internal.Templates.Path + "/*.gohtml"
+	hp := internal.Templates.Path() + "/*.gohtml"
 	html, err := filepath.Glob(hp)
 	if err != nil {
 		zlog.Printf("ztpl.Reload: reading templates from %q: %s", hp, err)
 	}
-	tp := internal.Templates.Path + "/*.gotxt"
+	tp := internal.Templates.Path() + "/*.gotxt"
 	txt, err := filepath.Glob(tp)
 	if err != nil {
 		zlog.Printf("ztpl.Reload: reading templates from %q: %s", tp, err)
@@ -56,7 +56,7 @@ func Reload() {
 	if err != nil {
 		zlog.Errorf("ztpl.Reload: parsing files: %s (from: %q and %q)", err, hp, tp)
 	}
-	internal.Templates.Set(internal.Templates.Path, t)
+	internal.Templates.Set(internal.Templates.Path(), t)
 }
 
 // IsLoaded reports if templates have been loaded.
