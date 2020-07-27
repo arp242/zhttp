@@ -52,6 +52,14 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 			UserErrorCode(reported))
 	}
 
+	// Always use the same message for 404s; not just because it's easier but
+	// also so that we're sure that an object which actually doesn't exist
+	// appears the same as an object the user has no permissions to access,
+	// which makes enumeration attacks harder.
+	if code == 404 {
+		userErr = errors.New("Not Found")
+	}
+
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
 	switch {
 	case strings.HasPrefix(ct, "application/json"):
@@ -199,7 +207,7 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 		j = ii
 	default:
 		var err error
-		j, err = json.Marshal(i)
+		j, err = json.MarshalIndent(i, "", "  ")
 		if err != nil {
 			return err
 		}
