@@ -3,7 +3,6 @@ package zhttp
 import (
 	"encoding/base64"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -35,7 +34,7 @@ func FlashError(w http.ResponseWriter, msg string, v ...interface{}) {
 // FlashMessage is a displayed flash message.
 type FlashMessage struct {
 	Level   string
-	Message template.HTML
+	Message string
 }
 
 // ReadFlash reads any existing flash message, returning the severity level and
@@ -58,7 +57,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 		Name: cookieFlash, Value: "", Path: "/",
 		Expires: time.Now().Add(-24 * time.Hour),
 	})
-	return &FlashMessage{string(c.Value[0]), template.HTML(b)}
+	return &FlashMessage{string(c.Value[0]), string(b)}
 }
 
 func flash(w http.ResponseWriter, lvl, msg string, v ...interface{}) {
