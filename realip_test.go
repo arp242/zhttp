@@ -1,65 +1,60 @@
 package zhttp
 
-// TODO: don't depend on chi.
-/*
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
 func TestRealIP(t *testing.T) {
 	tests := []struct {
-		name       string
 		remoteAddr string
 		header     http.Header
 		want       string
 	}{
-		{
-			"remote-addr",
-			"1.1.1.1:42",
-			nil,
-			"1.1.1.1",
-		},
-		{
-			"x-real-ip",
-			"1.1.1.1",
-			http.Header{"X-Real-Ip": {"100.100.100.100"}},
-			"100.100.100.100",
-		},
-		{
-			"x-real-ip-6",
-			"2001:beef::0",
-			http.Header{"X-Real-Ip": {"2001:dead::0"}},
-			"2001:dead::0",
-		},
-		{
-			"x-forwarded-for",
-			"1.1.1.1",
-			http.Header{"X-Forwarded-For": {"100.100.100.100"}},
-			"100.100.100.100",
-		},
-		{
-			"x-forwarded-for-6",
-			"2001:beef::0",
-			http.Header{"X-Forwarded-For": {"2001:dead::0"}},
-			"2001:dead::0",
-		},
+		// Remote addr
+		{"1.1.1.1:42", nil, "1.1.1.1"},
+		{"1.1.1.1", nil, "1.1.1.1"},
+
+		// X-Real-IP
+		{"1.1.1.1", http.Header{"X-Real-Ip": {"100.100.100.100"}}, "100.100.100.100"},
+		{"1.1.1.1:42", http.Header{"X-Real-Ip": {"100.100.100.100"}}, "100.100.100.100"},
+		{"2001:beef::0", http.Header{"X-Real-Ip": {"2001:dead::0"}}, "2001:dead::0"},
+
+		// X-Forwarded-For
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"100.100.100.100"}}, "100.100.100.100"},
+		{"2001:beef::0", http.Header{"X-Forwarded-For": {"2001:dead::0"}}, "2001:dead::0"},
+
+		// Filter local
+		{"1.1.1.1", http.Header{"X-Real-Ip": {"192.168.5.5"}}, "1.1.1.1"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"127.0.0.1"}}, "1.1.1.1"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2, 127.0.0.1"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2, fc00:123::1"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"9999::1, fc00:123::1"}}, "9999::1"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2, 127.0.0.1"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2, 127.0.0.1, 192.168.1.1"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"127.0.0.1, 2.2.2.2, 192.168.1.1"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"127.0.0.1, 2.2.2.2, localhost"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"127.0.0.1, 2.2.2.2, example.com, localhost"}}, "2.2.2.2"},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/", nil)
-			req.RemoteAddr = tt.remoteAddr
-			req.Header = tt.header
-
-			w := httptest.NewRecorder()
-			r := chi.NewRouter()
-			r.Use(RealIP)
-
+		t.Run("", func(t *testing.T) {
 			realIP := ""
-			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			handler := RealIP(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				realIP = r.RemoteAddr
 				w.Write([]byte("Hello World"))
-			})
-			r.ServeHTTP(w, req)
+			}))
 
-			if w.Code != 200 {
-				t.Fatalf("wrong response code: %d; wanted 200", w.Code)
+			r, _ := http.NewRequest("GET", "/", nil)
+			r.RemoteAddr = tt.remoteAddr
+			r.Header = tt.header
+			rr := httptest.NewRecorder()
+
+			handler.ServeHTTP(rr, r)
+
+			if rr.Code != 200 {
+				t.Fatalf("wrong response code: %d; wanted 200", rr.Code)
 			}
 
 			if realIP != tt.want {
@@ -68,4 +63,3 @@ func TestRealIP(t *testing.T) {
 		})
 	}
 }
-*/
