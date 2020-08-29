@@ -273,6 +273,10 @@ func Daterange(tz *time.Location, start, end time.Time) string {
 			}
 			return w + " weeks ago–today"
 		}
+		if months > 0 {
+			return start.Format("Jan 2") + "–today"
+		}
+
 		return n(days) + " days ago–today"
 	}
 
