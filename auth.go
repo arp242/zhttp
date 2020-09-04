@@ -2,11 +2,9 @@ package zhttp
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -67,19 +65,18 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 			if err != nil { // No cooke, no problem!
 				// Ensure there's a concrete type (rather than nil) as that makes templating easier.
 				u, _ := load(r.Context(), "")
-				//fmt.Fprintf(os.Stderr, "zhttp.Auth: no cookie: %#v\n", u) // TODO: log
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
 			}
 
 			u, err := load(r.Context(), c.Value)
-			if errors.Is(err, sql.ErrNoRows) { // Invalid token or whatever.
-				//fmt.Fprintf(os.Stderr, "zhttp.Auth: no rows\n") // TODO: log
-				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
-				return
-			}
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "zhttp.Auth: %s\n", err) // TODO: log
+				// Clear cookies for both "foo.domain.com" and ".domain.com";
+				// sometimes an invalid "stuck" cookie may be present,
+				// preventing login. See https://github.com/zgoat/goatcounter/issues/387
+				ClearAuthCookie(w, r.Host)
+				ClearAuthCookie(w, strings.Join(strings.Split(r.Host, ".")[1:], "."))
+
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
 			}

@@ -31,7 +31,8 @@ var FuncMap = template.FuncMap{
 	"div":          Div,
 	"if2":          If2,
 	"substr":       Substr,
-	"pp":           JSON,
+	"pp":           PP,
+	"json":         JSON,
 	"map":          Map,
 	"option_value": OptionValue,
 	"checkbox":     Checkbox,
@@ -165,8 +166,17 @@ func If2(cond bool, yes, no interface{}) interface{} {
 	return no
 }
 
-// JSON pretty-prints any object as JSON.
+// JSON prints any object as JSON.
 func JSON(v interface{}) string {
+	j, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(j)
+}
+
+// PP pretty-prints any object as JSON.
+func PP(v interface{}) string {
 	j, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		panic(err)
