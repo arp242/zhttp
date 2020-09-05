@@ -1,10 +1,10 @@
-github.com/monoculum/formam v0.0.0-20200527175922-6f3cce7a46cf h1:DJ+VDi88ZNh+C3HkJlNtfWIeOdLPxFjbtwGbWa/D3sY=
-github.com/monoculum/formam v0.0.0-20200527175922-6f3cce7a46cf/go.mod h1:JKa2av1XVkGjhxdLS59nDoXa2JpmIHpnURWNbzCtXtc=
+github.com/monoculum/formam v0.0.0-20200905010316-d7a8fbd33677 h1:N11HMdhT5DtkXsQQo3xPFipjvG7QwzKa9MBupRQqXaU=
+github.com/monoculum/formam v0.0.0-20200905010316-d7a8fbd33677/go.mod h1:JKa2av1XVkGjhxdLS59nDoXa2JpmIHpnURWNbzCtXtc=
 zgo.at/guru v1.1.0 h1:hvMLOzPnv7XApwJZgxvFxBA8wb6RGPUw9lz8kmq450g=
 zgo.at/guru v1.1.0/go.mod h1:eltnfk6QwmM7ic3OLzmGMjEChP2iLuYXERyliREiA00=
 zgo.at/json v0.0.0-20200627042140-d5025253667f h1:o4XL0oDtAzxN+mkVCti8MYz5nLNfbrl17I78rqLWQrk=
 zgo.at/json v0.0.0-20200627042140-d5025253667f/go.mod h1:DUuNIRpNC7/cup+Gy0qhwQEjjlLFXXRZ04VnVv9bf3E=
 zgo.at/zlog v0.0.0-20200404052423-adffcc8acd57 h1:sIuh9IpccNlzMsmAvF7EPT87/Ab2XdUJHizsMxbQgM4=
 zgo.at/zlog v0.0.0-20200404052423-adffcc8acd57/go.mod h1:YkLAQZjLsp1RqWHn8SJokHzXyYU+6FZjM4GNY64IKME=
-zgo.at/zstd v0.0.0-20200725081511-350d4ae0eb40 h1:6THn+vWRhVyjGPA6n8SIPQjFifenECa+Kq6VSyp5FzE=
-zgo.at/zstd v0.0.0-20200725081511-350d4ae0eb40/go.mod h1:bQqcOgaRPCBT7lZ52Ksg9GF1xwi0L97E3AyvW3oGJYE=
+zgo.at/zstd v0.0.0-20200905040026-59bd1cd930f3 h1:QcFOqJN3gKKWCyUqid2st7cUx38axATQGNr58qm8T4Y=
+zgo.at/zstd v0.0.0-20200905040026-59bd1cd930f3/go.mod h1:bQqcOgaRPCBT7lZ52Ksg9GF1xwi0L97E3AyvW3oGJYE=
