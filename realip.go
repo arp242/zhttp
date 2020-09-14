@@ -16,6 +16,11 @@ func RealIP(h http.Handler) http.Handler {
 }
 
 func realIP(r *http.Request) string {
+	cfip := r.Header.Get("Cf-Connecting-Ip")
+	if cfip != "" && !PrivateIP(cfip) {
+		return cfip
+	}
+
 	xrip := r.Header.Get("X-Real-Ip")
 	if xrip != "" && !PrivateIP(xrip) {
 		return xrip

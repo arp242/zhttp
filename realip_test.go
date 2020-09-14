@@ -16,6 +16,9 @@ func TestRealIP(t *testing.T) {
 		{"1.1.1.1:42", nil, "1.1.1.1"},
 		{"1.1.1.1", nil, "1.1.1.1"},
 
+		// CF-Connecting-IP
+		{"1.2.3.4", http.Header{"CF-Connecting-IP": {"1.2.3.4"}}, "1.2.3.4"},
+
 		// X-Real-IP
 		{"1.1.1.1", http.Header{"X-Real-Ip": {"100.100.100.100"}}, "100.100.100.100"},
 		{"1.1.1.1:42", http.Header{"X-Real-Ip": {"100.100.100.100"}}, "100.100.100.100"},
