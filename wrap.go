@@ -46,6 +46,11 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 	}
 
 	userErr := reported
+
+	if _, ok := userErr.(stackTracer); ok {
+		userErr = errors.Unwrap(userErr)
+	}
+
 	if code >= 500 {
 		zlog.Field("code", UserErrorCode(reported)).FieldsRequest(r).Error(reported)
 		userErr = fmt.Errorf(
@@ -77,8 +82,6 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported e
 			j, err = jErr.MarshalJSON()
 		} else if jErr, ok := userErr.(errorJSON); ok {
 			j, err = jErr.ErrorJSON()
-		} else if _, ok := userErr.(stackTracer); ok {
-			j, err = json.Marshal(map[string]string{"error": errors.Unwrap(userErr).Error()})
 		} else {
 			j, err = json.Marshal(map[string]string{"error": userErr.Error()})
 		}
