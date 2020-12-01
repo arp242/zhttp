@@ -25,6 +25,7 @@ http.HandleFunc("/bar", zhttp.Wrap(func(w http.ResponseWriter, r *http.Request) 
 
     return zhttp.Text(w, "Hello, %s", d)
 }))
+```
 
 It's just more convenient than `http.Error(...)` followed by a `return`. The
 `ErrFunc()` will be used to report returned errors (you can override it if you
