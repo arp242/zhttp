@@ -37,7 +37,7 @@ const (
 //
 //   <-ch
 //   cleanup()
-func Serve(flags uint8, testMode bool, server *http.Server) chan (struct{}) {
+func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 	abs, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		abs = os.Args[0]
@@ -71,8 +71,8 @@ func Serve(flags uint8, testMode bool, server *http.Server) chan (struct{}) {
 
 		// TODO: might be even better to expose s so tests can send their own
 		// signals whenever they're ready.
-		if testMode {
-			fmt.Println("TEST MODE, SHUTTING DOWN IN A SECOND")
+		if testMode > 0 {
+			fmt.Printf("TEST MODE, SHUTTING DOWN IN %d SECONDS\n", testMode)
 			go func() {
 				for {
 					time.Sleep(1 * time.Second)
