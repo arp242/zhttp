@@ -1,9 +1,11 @@
 package zhttp
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -21,7 +23,15 @@ const (
 	ServeRedirect = uint8(0b0010)
 )
 
-// Serve a HTTP server with graceful shutdown.
+// Serve a HTTP server with graceful shutdown and reasonable timeouts.
+//
+// If the ReadHeader, Read, Write, or Idle timeouts are 0, then they will be set
+// to 10, 60, 60, and 120 seconds respectively.
+//
+// Errors from the net/http package are logged via zgo.at/zlog instead of the
+// default log package. "TLS handshake error" are silenced, since there's rarely
+// anything that can be done with that. Define server.ErrorLog if you want the
+// old behaviour back.
 //
 // The server will use TLS if the http.Server has a valid TLSConfig; it will
 // also try to redirect port 80 to the TLS server, but will gracefully fail if
@@ -52,6 +62,23 @@ func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 	if err != nil {
 		host = server.Addr
 		port = "443"
+	}
+
+	// Set some sane-ish defaults.
+	if server.ReadHeaderTimeout == 0 {
+		server.ReadHeaderTimeout = 10 * time.Second
+	}
+	if server.ReadTimeout == 0 {
+		server.ReadTimeout = 60 * time.Second
+	}
+	if server.WriteTimeout == 0 {
+		server.WriteTimeout = 60 * time.Second
+	}
+	if server.IdleTimeout == 0 {
+		server.IdleTimeout = 120 * time.Second
+	}
+	if server.ErrorLog == nil {
+		server.ErrorLog = logwrap()
 	}
 
 	ln, err := net.Listen("tcp", server.Addr)
@@ -121,4 +148,36 @@ func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 
 	ch <- struct{}{}
 	return ch
+}
+
+func logwrap() *log.Logger {
+	b := new(bytes.Buffer)
+	ll := log.New(b, "", 0)
+
+	go func() {
+		for {
+			l, err := b.ReadString('\n')
+			if err != nil {
+				time.Sleep(200 * time.Millisecond)
+				continue
+			}
+
+			l = strings.TrimRight(l, "\n")
+
+			// Don't log errors we don't care about:
+			//
+			//   http: TLS handshake error from 127.0.0.1:45698: tls: first record does not look like a TLS handshake
+			//   http: TLS handshake error from 128.14.209.234:36170: acme/autocert: server name contains invalid character
+			//   http: TLS handshake error from 156.96.112.184:52662: acme/autocert: missing server name
+			//
+			// This is people sending wrong data; not much we can do about that.
+			if strings.HasPrefix(l, "http: TLS handshake error from ") {
+				continue
+			}
+
+			zlog.Module("http").Errorf(l)
+		}
+	}()
+
+	return ll
 }
