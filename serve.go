@@ -166,12 +166,14 @@ func logwrap() *log.Logger {
 
 			// Don't log errors we don't care about:
 			//
-			//   http: TLS handshake error from 127.0.0.1:45698: tls: first record does not look like a TLS handshake
-			//   http: TLS handshake error from 128.14.209.234:36170: acme/autocert: server name contains invalid character
-			//   http: TLS handshake error from 156.96.112.184:52662: acme/autocert: missing server name
+			//   http: TLS handshake error from %s: %s
+			//   http2: received GOAWAY [FrameHeader GOAWAY len=20], starting graceful shutdown
+			//   http2: server: error reading preface from client %s: %s
+			//   http2: timeout waiting for SETTINGS frames from %v
 			//
 			// This is people sending wrong data; not much we can do about that.
-			if strings.HasPrefix(l, "http: TLS handshake error from ") {
+			if strings.HasPrefix(l, "http: TLS handshake") || strings.HasPrefix(l, "http2: received GOAWAY") ||
+				strings.HasPrefix(l, "http2: server: error reading preface") || strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") {
 				continue
 			}
 
