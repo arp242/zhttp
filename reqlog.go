@@ -3,9 +3,14 @@ package zhttp
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"zgo.at/zhttp/internal/isatty"
 )
+
+var enableColors = isatty.IsTerminal(os.Stdout.Fd())
 
 // Log requests to stdout.
 func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Handler {
@@ -33,16 +38,18 @@ func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Ha
 			next.ServeHTTP(ww, r)
 
 			// Get color-coded status code.
-			status := ""
-			switch {
-			case ww.Status() == 0 || ww.Status() < 200 || ww.Status() >= 600:
-				status = "INVALID STATUS CODE: '%d'"
-			case ww.Status() >= 200 && ww.Status() < 400:
-				status = "\x1b[48;5;154m\x1b[38;5;0m%d\x1b[0m"
-			case ww.Status() >= 400 && ww.Status() <= 499:
-				status = "\x1b[1m\x1b[48;5;221m\x1b[38;5;0m%d\x1b[0m"
-			case ww.Status() >= 500 && ww.Status() <= 599:
-				status = "\x1b[1m\x1b[48;5;9m\x1b[38;5;15m%d\x1b[0m"
+			status := "%d"
+			if enableColors {
+				switch {
+				case ww.Status() == 0 || ww.Status() < 200 || ww.Status() >= 600:
+					status = "INVALID STATUS CODE: '%d'"
+				case ww.Status() >= 200 && ww.Status() < 400:
+					status = "\x1b[48;5;154m\x1b[38;5;0m%d\x1b[0m"
+				case ww.Status() >= 400 && ww.Status() <= 499:
+					status = "\x1b[1m\x1b[48;5;221m\x1b[38;5;0m%d\x1b[0m"
+				case ww.Status() >= 500 && ww.Status() <= 599:
+					status = "\x1b[1m\x1b[48;5;9m\x1b[38;5;15m%d\x1b[0m"
+				}
 			}
 			status = fmt.Sprintf(status, ww.Status())
 

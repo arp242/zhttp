@@ -158,6 +158,9 @@ func logwrap() *log.Logger {
 		for {
 			l, err := b.ReadString('\n')
 			if err != nil {
+				if l != "" {
+					fmt.Print(l)
+				}
 				time.Sleep(200 * time.Millisecond)
 				continue
 			}
@@ -172,8 +175,10 @@ func logwrap() *log.Logger {
 			//   http2: timeout waiting for SETTINGS frames from %v
 			//
 			// This is people sending wrong data; not much we can do about that.
-			if strings.HasPrefix(l, "http: TLS handshake") || strings.HasPrefix(l, "http2: received GOAWAY") ||
-				strings.HasPrefix(l, "http2: server: error reading preface") || strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") {
+			if strings.HasPrefix(l, "http: TLS handshake") ||
+				strings.HasPrefix(l, "http2: received GOAWAY") ||
+				strings.HasPrefix(l, "http2: server: error reading preface") ||
+				strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") {
 				continue
 			}
 

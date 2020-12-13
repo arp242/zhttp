@@ -6,7 +6,7 @@ import (
 
 // DefaultHeaders will be set by default.
 var DefaultHeaders = http.Header{
-	"Strict-Transport-Security": []string{"max-age=2592000"},
+	"Strict-Transport-Security": []string{"max-age=7776000"},
 	"X-Frame-Options":           []string{"deny"},
 	"X-Content-Type-Options":    []string{"nosniff"},
 }

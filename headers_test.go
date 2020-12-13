@@ -16,18 +16,18 @@ func TestHeaders(t *testing.T) {
 		want string
 	}{
 		{nil, `
-			Strict-Transport-Security: max-age=2592000
+			Strict-Transport-Security: max-age=7776000
 			X-Content-Type-Options: nosniff
 			X-Frame-Options: deny`},
 		{http.Header{"a": {"b"}}, `
 			A: b
-			Strict-Transport-Security: max-age=2592000
+			Strict-Transport-Security: max-age=7776000
 			X-Content-Type-Options: nosniff
 			X-Frame-Options: deny`},
 		{http.Header{"b": {"c", "d"}, "X-Frame-Options": {"other"}, "X-Content-Type-Options": nil}, `
 			B: c
 			B: d
-			Strict-Transport-Security: max-age=2592000
+			Strict-Transport-Security: max-age=7776000
 			X-Frame-Options: other`},
 	}
 
