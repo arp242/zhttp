@@ -178,7 +178,8 @@ func logwrap() *log.Logger {
 			if strings.HasPrefix(l, "http: TLS handshake") ||
 				strings.HasPrefix(l, "http2: received GOAWAY") ||
 				strings.HasPrefix(l, "http2: server: error reading preface") ||
-				strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") {
+				strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") ||
+				strings.HasPrefix(l, "write tcp ") {
 				continue
 			}
 
