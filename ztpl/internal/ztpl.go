@@ -32,6 +32,9 @@ func (t *LockedTpl) Path() string {
 func (t *LockedTpl) Has(name string) bool {
 	t.Lock()
 	defer t.Unlock()
+	if t == nil || t.t == nil {
+		return false
+	}
 	return t.t.Lookup(name) != nil
 }
 
