@@ -1,4 +1,6 @@
-package zhttp
+// Package auth adds user authentication.
+
+package auth
 
 import (
 	"context"
@@ -8,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"zgo.at/zhttp"
 	"zgo.at/zhttp/ctxkey"
 )
 
@@ -16,40 +19,34 @@ var (
 	oneYear   = 24 * 365 * time.Hour
 )
 
-// Flags to add to all cookies (login and flash).
-var (
-	CookieSecure   = false
-	CookieSameSite = http.SameSiteLaxMode
-)
-
-type loadFunc func(ctx context.Context, email string) (User, error)
+type loadFunc func(ctx context.Context, token string) (User, error)
 
 type User interface {
-	GetToken() string
+	CSRFToken() string
 }
 
-// SetAuthCookie sets the authentication cookie to val for the given domain.
-func SetAuthCookie(w http.ResponseWriter, val, domain string) {
+// SetCookie sets the authentication cookie to val for the given domain.
+func SetCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
-		Domain:   RemovePort(domain),
+		Domain:   zhttp.RemovePort(domain),
 		Name:     cookieKey,
 		Value:    val,
 		Path:     "/",
 		Expires:  time.Now().Add(oneYear),
 		HttpOnly: true,
-		Secure:   CookieSecure,
-		SameSite: CookieSameSite,
+		Secure:   zhttp.CookieSecure,
+		SameSite: zhttp.CookieSameSite,
 	})
 }
 
-// ClearAuthCookie sends an empty auth cookie with an expiry in the past for the
+// ClearCookie sends an empty auth cookie with an expiry in the past for the
 // given domain, clearing it in the client.
 //
 // Make sure the domain matches with what was sent before *exactly*, or the
 // browser will set a second cookie.
-func ClearAuthCookie(w http.ResponseWriter, domain string) {
+func ClearCookie(w http.ResponseWriter, domain string) {
 	http.SetCookie(w, &http.Cookie{
-		Domain:  RemovePort(domain),
+		Domain:  zhttp.RemovePort(domain),
 		Name:    cookieKey,
 		Value:   "",
 		Path:    "/",
@@ -57,12 +54,19 @@ func ClearAuthCookie(w http.ResponseWriter, domain string) {
 	})
 }
 
-// Auth adds user auth to an endpoint.
-func Auth(load loadFunc) func(http.Handler) http.Handler {
+// Add user auth to an endpoint.
+//
+// The load callback is called with the value of the authentication cookie.
+//
+// The User is added to the context.
+//
+// POST, PATH, PUT, and DELETE requests will check the CSRF token from the
+// "csrf" field with the value from User.CSRFToken()
+func Add(load loadFunc) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c, err := r.Cookie(cookieKey)
-			if err != nil { // No cooke, no problem!
+			if err != nil { // No cookie, no problem!
 				// Ensure there's a concrete type (rather than nil) as that makes templating easier.
 				u, _ := load(r.Context(), "")
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
@@ -74,8 +78,8 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 				// Clear cookies for both "foo.domain.com" and ".domain.com";
 				// sometimes an invalid "stuck" cookie may be present,
 				// preventing login. See https://github.com/zgoat/goatcounter/issues/387
-				ClearAuthCookie(w, r.Host)
-				ClearAuthCookie(w, strings.Join(strings.Split(r.Host, ".")[1:], "."))
+				ClearCookie(w, r.Host)
+				ClearCookie(w, strings.Join(strings.Split(r.Host, ".")[1:], "."))
 
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxkey.User, u)))
 				return
@@ -86,13 +90,13 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 			case http.MethodDelete, http.MethodPatch, http.MethodPost, http.MethodPut:
 				var err error
 				if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-					err = r.ParseMultipartForm(32 << 20) // 32MB, http.defaultMaxMemory
+					err = r.ParseMultipartForm(32 << 20) // 32M, http.defaultMaxMemory
 				} else {
 					err = r.ParseForm()
 				}
 				if err != nil {
 					w.WriteHeader(500)
-					fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: err
+					fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: should probably use errpage?
 					return
 				}
 
@@ -100,13 +104,13 @@ func Auth(load loadFunc) func(http.Handler) http.Handler {
 				r.Form.Del("csrf")
 				if token == "" {
 					w.WriteHeader(http.StatusForbidden)
-					fmt.Fprintln(w, "CSRF token is empty")
+					fmt.Fprintln(w, "CSRF token is empty") // TODO: should probably use errpage?
 					return
 				} else {
-					t := u.GetToken()
+					t := u.CSRFToken()
 					if t != "" && token != t {
 						w.WriteHeader(http.StatusForbidden)
-						fmt.Fprintln(w, "Invalid CSRF token")
+						fmt.Fprintln(w, "Invalid CSRF token") // TODO: should probably use errpage?
 						return
 					}
 				}
@@ -144,7 +148,12 @@ func Filter(f filterFunc) func(http.Handler) http.Handler {
 				return
 			}
 
-			ErrPage(w, r, code, err)
+			zhttp.ErrPage(w, r, code, err)
 		})
 	}
+}
+
+type coder interface {
+	Code() int
+	Error() string
 }

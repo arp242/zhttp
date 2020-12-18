@@ -19,6 +19,12 @@ const (
 
 const cookieFlash = "flash"
 
+// Flags to add to all cookies (login and flash).
+var (
+	CookieSecure   = false
+	CookieSameSite = http.SameSiteLaxMode
+)
+
 // Flash sets a new flash message at the LevelInfo, overwriting any previous
 // messages (if any).
 func Flash(w http.ResponseWriter, msg string, v ...interface{}) {

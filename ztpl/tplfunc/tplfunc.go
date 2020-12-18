@@ -170,7 +170,7 @@ func If2(cond bool, yes, no interface{}) interface{} {
 func JSON(v interface{}) string {
 	j, err := json.Marshal(v)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("tplfunc.JSON: %w", err))
 	}
 	return string(j)
 }
@@ -179,7 +179,7 @@ func JSON(v interface{}) string {
 func PP(v interface{}) string {
 	j, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("tplfunc.PP: %w", err))
 	}
 	return string(j)
 }
@@ -189,13 +189,13 @@ func PP(v interface{}) string {
 // https://stackoverflow.com/a/18276968/660921
 func Map(values ...interface{}) map[string]interface{} {
 	if len(values)%2 != 0 {
-		panic("zhttp.Tmap: need key/value")
+		panic("tplfunc.Map: need key/value")
 	}
 	dict := make(map[string]interface{}, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
-			panic(fmt.Sprintf("zhttp.Tmap: key must be a string: %T: %#[1]v", key))
+			panic(fmt.Sprintf("tplfunc.Map: key must be a string: %T: %#[1]v", key))
 		}
 		dict[key] = values[i+1]
 	}

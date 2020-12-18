@@ -1,4 +1,4 @@
-package zhttp
+package auth
 
 import (
 	"context"
@@ -18,10 +18,10 @@ func (h handle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type testUser struct{}
 
-func (testUser) GetToken() string { return "correct" }
+func (testUser) CSRFToken() string { return "correct" }
 
 func TestCSRF(t *testing.T) {
-	handler := Auth(func(ctx context.Context, email string) (User, error) {
+	handler := Add(func(ctx context.Context, email string) (User, error) {
 		return testUser{}, nil
 	})(handle{})
 

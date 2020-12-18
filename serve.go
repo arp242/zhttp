@@ -38,7 +38,7 @@ const (
 // the permission for this is denied.
 //
 // This will return a channel which will send a value after the server is set up
-// and ready to accept connections, and send another valiue after the server is
+// and ready to accept connections, and send another value after the server is
 // shut down and stopped accepting connections:
 //
 //   ch := zhttp.Serve(..)

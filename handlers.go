@@ -15,7 +15,7 @@ import (
 func HandlerRobots(rules [][]string) func(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	for _, r := range rules {
-		buf.WriteString(fmt.Sprintf("%s\n%s\n\n", r[0], r[1]))
+		buf.WriteString(fmt.Sprintf("%s\n%s\n", r[0], r[1]))
 	}
 	text := buf.Bytes()
 
@@ -131,5 +131,4 @@ func HandlerRedirectHTTP(port string) http.HandlerFunc {
 		w.Header().Set("Location", fmt.Sprintf("https://%s:%s%s%s", r.Host, port, r.URL.Path, q))
 		w.WriteHeader(301)
 	}
-
 }

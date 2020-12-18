@@ -51,7 +51,7 @@ var privateCIDR = func() []*net.IPNet {
 
 // PrivateIP reports if this is a private non-public IP address.
 //
-// This will also return true for anything that is not an IP address, such as
+// This will return true for anything that is not an IP address, such as
 // "example.com" or "localhost".
 func PrivateIP(ip string) bool {
 	addr := net.ParseIP(RemovePort(strings.TrimSpace(ip)))
