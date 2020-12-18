@@ -29,14 +29,8 @@ type (
 	}
 )
 
-// WrapWriter replaces the http.ResponseWriter with our version of
-// http.ResponseWriter for some additional functionality.
-func WrapWriter(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(NewResponseWriter(w, r.ProtoMajor), r)
-	})
-}
-
+// ErrPage is the error page; this gets called whenever a "wrapped" handler
+// returns an error.
 var ErrPage = DefaultErrPage
 
 func DefaultErrPage(w http.ResponseWriter, r *http.Request, code int, reported error) {

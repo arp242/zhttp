@@ -1,4 +1,4 @@
-package zhttp
+package mware
 
 import (
 	"fmt"
@@ -7,15 +7,26 @@ import (
 	"strings"
 	"time"
 
+	"zgo.at/zhttp"
 	"zgo.at/zhttp/internal/isatty"
 )
 
 var enableColors = isatty.IsTerminal(os.Stdout.Fd())
 
-// Log requests to stdout.
-func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Handler {
-	if timeFmt == "" {
-		timeFmt = "15:04:05 "
+type RequestLogOptions struct {
+	Host    bool   // Print Host: as well
+	TimeFmt string // Time format; default is just the time.
+}
+
+// RequestLog logs all requests to stdout.
+//
+// Any paths matching ignore will not be printed.
+func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) http.Handler {
+	if opt == nil {
+		opt = &RequestLogOptions{
+			Host:    true,
+			TimeFmt: "15:04:05 ",
+		}
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -31,9 +42,9 @@ func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Ha
 
 			start := time.Now()
 
-			ww, ok := w.(ResponseWriter)
+			ww, ok := w.(zhttp.ResponseWriter)
 			if !ok {
-				ww = NewResponseWriter(w, r.ProtoMajor)
+				ww = zhttp.NewResponseWriter(w, r.ProtoMajor)
 			}
 			next.ServeHTTP(ww, r)
 
@@ -60,11 +71,11 @@ func Log(host bool, timeFmt string, ignore ...string) func(http.Handler) http.Ha
 			}
 
 			url := r.URL.RequestURI()
-			if host {
+			if opt.Host {
 				url = r.Host + url
 			}
 
-			fmt.Printf("%s %s %s %3.0fms  %s\n", time.Now().Format(timeFmt),
+			fmt.Printf("%s %s %s %3.0fms  %s\n", time.Now().Format(opt.TimeFmt),
 				status, method, time.Since(start).Seconds()*1000, url)
 		})
 	}

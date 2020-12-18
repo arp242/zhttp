@@ -1,4 +1,4 @@
-package zhttp
+package mware
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestNoCache(t *testing.T) {
-	rr := ztest.HTTP(t, nil, NoCache(handle{}))
+	rr := ztest.HTTP(t, nil, NoCache()(handle{}))
 	if rr.Code != http.StatusOK {
 		t.Errorf("want code 200, got %v", rr.Code)
 	}
@@ -21,7 +21,7 @@ func TestNoCache(t *testing.T) {
 }
 
 func TestNoStore(t *testing.T) {
-	rr := ztest.HTTP(t, nil, NoStore(handle{}))
+	rr := ztest.HTTP(t, nil, NoStore()(handle{}))
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("want code 200, got %v", rr.Code)

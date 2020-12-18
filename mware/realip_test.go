@@ -1,4 +1,4 @@
-package zhttp
+package mware
 
 import (
 	"net/http"
@@ -17,7 +17,7 @@ func TestRealIP(t *testing.T) {
 		{"1.1.1.1", nil, "1.1.1.1"},
 
 		// CF-Connecting-IP
-		{"1.2.3.4", http.Header{"CF-Connecting-IP": {"1.2.3.4"}}, "1.2.3.4"},
+		{"1.2.3.4", http.Header{"Cf-Connecting-Ip": {"4.4.4.4"}}, "4.4.4.4"},
 
 		// X-Real-IP
 		{"1.1.1.1", http.Header{"X-Real-Ip": {"100.100.100.100"}}, "100.100.100.100"},
@@ -44,7 +44,7 @@ func TestRealIP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
 			realIP := ""
-			handler := RealIP(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := RealIP()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				realIP = r.RemoteAddr
 				w.Write([]byte("Hello World"))
 			}))

@@ -1,4 +1,4 @@
-package zhttp
+package mware
 
 import (
 	"net/http"
@@ -25,6 +25,9 @@ func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 	}
 	if opts.Limit == nil {
 		panic("opts.Limit is nil")
+	}
+	if opts.Store == nil {
+		opts.Store = NewRatelimitMemory()
 	}
 
 	msg := []byte(opts.Message)
