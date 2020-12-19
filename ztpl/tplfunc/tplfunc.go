@@ -22,6 +22,7 @@ var FuncMap = template.FuncMap{
 	"string":       String,
 	"has_prefix":   HasPrefix,
 	"has_suffix":   HasSuffix,
+	"ucfirst":      UCFirst,
 	"checked":      Checked,
 	"nformat":      Number,
 	"tformat":      Time,
@@ -66,6 +67,16 @@ func HasPrefix(s, prefix string) bool { return strings.HasPrefix(s, prefix) }
 
 // HasSuffix tests whether the string s ends with suffix.
 func HasSuffix(s, suffix string) bool { return strings.HasSuffix(s, suffix) }
+
+// UCFirst converts the first letter to uppercase, and the rest to lowercase.
+func UCFirst(s string) string {
+	f := ""
+	for _, c := range s {
+		f = string(c)
+		break
+	}
+	return strings.ToUpper(f) + strings.ToLower(s[len(f):])
+}
 
 // Substr returns part of a string.
 func Substr(s string, i, j int) string {
