@@ -9,7 +9,8 @@ import (
 
 var Templates = new(LockedTpl)
 
-// Add a lock to template.Template for reloading in dev without race conditions.
+// LockedTpl adds a lock to template.Template for reloading in dev without race
+// conditions.
 type LockedTpl struct {
 	sync.Mutex
 	t    *template.Template
@@ -32,7 +33,7 @@ func (t *LockedTpl) Path() string {
 func (t *LockedTpl) Has(name string) bool {
 	t.Lock()
 	defer t.Unlock()
-	if t == nil || t.t == nil {
+	if t.t == nil {
 		return false
 	}
 	return t.t.Lookup(name) != nil
@@ -41,7 +42,7 @@ func (t *LockedTpl) Has(name string) bool {
 func (t *LockedTpl) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
 	t.Lock()
 	defer t.Unlock()
-	if t == nil || t.t == nil {
+	if t.t == nil {
 		return errors.New("ztpl.ExecuteTemplate: not initialized; call ztpl.Init()")
 	}
 	return t.t.ExecuteTemplate(wr, name, data)

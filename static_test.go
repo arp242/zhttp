@@ -123,7 +123,7 @@ func TestStatic(t *testing.T) {
 			ztest.Code(t, rr, tt.wantCode)
 
 			for k, want := range tt.wantHeaders {
-				got := rr.HeaderMap[k]
+				got := rr.Header()[k]
 				if !reflect.DeepEqual(got, want) {
 					t.Errorf("%q header wrong\ngot:  %#v\nwant: %#v", k, got, want)
 				}

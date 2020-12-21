@@ -20,12 +20,12 @@ func Unpanic() func(http.Handler) http.Handler {
 
 				err, ok := rec.(error)
 				if !ok {
-					err = fmt.Errorf("panic at %s %s%s: %+v\n\nForm: %#v\nHeaders: %#v\n",
+					err = fmt.Errorf("panic at %s %s%s: %+v\n\nForm: %#v\nHeaders: %#v",
 						r.Method, r.Host, r.RequestURI, rec, r.Form, r.Header)
 				}
 
 				err = fmt.Errorf("%w\n%s", err, debug.Stack())
-				zhttp.ErrPage(w, r, 500, err)
+				zhttp.ErrPage(w, r, err)
 			}()
 
 			next.ServeHTTP(w, r)

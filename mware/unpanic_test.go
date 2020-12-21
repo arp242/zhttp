@@ -11,9 +11,9 @@ import (
 
 func TestUnpanic(t *testing.T) {
 	var capture error
-	zhttp.ErrPage = func(w http.ResponseWriter, r *http.Request, code int, reported error) {
+	zhttp.ErrPage = func(w http.ResponseWriter, r *http.Request, reported error) {
 		capture = reported
-		zhttp.DefaultErrPage(w, r, code, reported)
+		zhttp.DefaultErrPage(w, r, reported)
 	}
 	defer func() { zhttp.ErrPage = zhttp.DefaultErrPage }()
 

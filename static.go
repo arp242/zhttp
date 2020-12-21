@@ -51,12 +51,10 @@ const (
 //
 // TODO: this should use http.FileSystem.
 func NewStatic(dir, domain string, cache map[string]int, packed map[string][]byte) Static {
-	if cache != nil {
-		for k := range cache {
-			_, err := filepath.Match(k, "")
-			if err != nil {
-				panic(fmt.Sprintf("zhttp.NewStatic: invalid pattern in cache map: %s", err))
-			}
+	for k := range cache {
+		_, err := filepath.Match(k, "")
+		if err != nil {
+			panic(fmt.Sprintf("zhttp.NewStatic: invalid pattern in cache map: %s", err))
 		}
 	}
 

@@ -1,9 +1,10 @@
 package zhttp
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
+
+	"zgo.at/guru"
 )
 
 // HostRoute routes requests based on the Host header.
@@ -48,7 +49,7 @@ func HostRoute(routers map[string]http.Handler) http.HandlerFunc {
 		}
 
 		if !ok {
-			ErrPage(w, r, 404, fmt.Errorf("unknown domain: %q", r.Host))
+			ErrPage(w, r, guru.Errorf(404, "unknown domain: %q", r.Host))
 			return
 		}
 

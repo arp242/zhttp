@@ -70,7 +70,7 @@ func TestErrPage(t *testing.T) {
 				r := httptest.NewRequest("GET", "/", nil)
 				r.Header.Set("Content-Type", "application/json")
 
-				ErrPage(rr, r, tt.code, tt.err)
+				ErrPage(rr, r, tt.err)
 				out := rr.Body.String()
 				if out != tt.wantJSON {
 					t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.wantJSON)
@@ -82,7 +82,7 @@ func TestErrPage(t *testing.T) {
 				r := httptest.NewRequest("GET", "/", nil)
 				r.Header.Set("Content-Type", "text/html")
 
-				ErrPage(rr, r, tt.code, tt.err)
+				ErrPage(rr, r, tt.err)
 				out := rr.Body.String()
 				if out != tt.wantHTML {
 					t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.wantHTML)

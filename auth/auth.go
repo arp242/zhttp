@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"zgo.at/guru"
 	"zgo.at/zhttp"
 	"zgo.at/zhttp/ctxkey"
 )
@@ -148,7 +149,7 @@ func Filter(f filterFunc) func(http.Handler) http.Handler {
 				return
 			}
 
-			zhttp.ErrPage(w, r, code, err)
+			zhttp.ErrPage(w, r, guru.WithCode(code, err))
 		})
 	}
 }
