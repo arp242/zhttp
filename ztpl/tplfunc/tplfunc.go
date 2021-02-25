@@ -39,6 +39,7 @@ var FuncMap = template.FuncMap{
 	"checkbox":     Checkbox,
 	"daterange":    Daterange,
 	"duration":     Duration,
+	"join":         strings.Join,
 }
 
 // DerefString dereferences a string pointer, returning "" if it's nil.

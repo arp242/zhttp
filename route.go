@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"zgo.at/guru"
+	"zgo.at/zstd/znet"
 )
 
 // HostRoute routes requests based on the Host header.
@@ -33,7 +34,7 @@ func HostRoute(routers map[string]http.Handler) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		host := RemovePort(strings.ToLower(r.Host))
+		host := znet.RemovePort(strings.ToLower(r.Host))
 		route, ok := routers[host]
 		if !ok {
 			for k, v := range wildcards {

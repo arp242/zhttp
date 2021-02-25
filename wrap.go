@@ -91,6 +91,8 @@ func UserErrorCode(err error) string {
 //
 // This is expected to write a status code and some content; for example a
 // template with the error or some JSON data for an API request.
+//
+// nil errors should do nothing.
 var ErrPage = DefaultErrPage
 
 // DefaultErrPage is the default error page.
@@ -111,6 +113,9 @@ var ErrPage = DefaultErrPage
 // (via the Referer header), or render the error.gohtml template if the header
 // isn't set.
 func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
+	if reported == nil {
+		return
+	}
 	hasStatus := true
 	if ww, ok := w.(statusWriter); !ok || ww.Status() == 0 {
 		hasStatus = false
@@ -175,17 +180,12 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 	}
 }
 
-// HandlerFunc function.
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
 
 // Wrap a http.HandlerFunc and handle error returns.
-func Wrap(handler HandlerFunc) http.HandlerFunc {
+func Wrap(h HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := handler(w, r)
-		if err == nil {
-			return
-		}
-		ErrPage(w, r, err)
+		ErrPage(w, r, h(w, r))
 	}
 }
 

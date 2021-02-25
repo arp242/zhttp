@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"zgo.at/zhttp"
+	"zgo.at/zstd/znet"
 )
 
 // RealIP sets the RemoteAddr to X-Real-Ip, X-Forwarded-For, or the RemoteAddr
@@ -22,12 +22,12 @@ func RealIP() func(http.Handler) http.Handler {
 
 func realIP(r *http.Request) string {
 	cfip := r.Header.Get("Cf-Connecting-Ip")
-	if cfip != "" && !zhttp.PrivateIP(cfip) {
+	if cfip != "" && !znet.PrivateIPString(cfip) {
 		return cfip
 	}
 
 	xrip := r.Header.Get("X-Real-Ip")
-	if xrip != "" && !zhttp.PrivateIP(xrip) {
+	if xrip != "" && !znet.PrivateIPString(xrip) {
 		return xrip
 	}
 
@@ -35,11 +35,11 @@ func realIP(r *http.Request) string {
 	if xff != "" {
 		xffSplit := strings.Split(xff, ",")
 		for i := len(xffSplit) - 1; i >= 0; i-- {
-			if !zhttp.PrivateIP(xffSplit[i]) {
+			if !znet.PrivateIPString(xffSplit[i]) {
 				return strings.TrimSpace(xffSplit[i])
 			}
 		}
 	}
 
-	return zhttp.RemovePort(r.RemoteAddr)
+	return znet.RemovePort(r.RemoteAddr)
 }

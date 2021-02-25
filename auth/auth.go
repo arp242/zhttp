@@ -13,6 +13,7 @@ import (
 	"zgo.at/guru"
 	"zgo.at/zhttp"
 	"zgo.at/zhttp/ctxkey"
+	"zgo.at/zstd/znet"
 )
 
 var (
@@ -29,7 +30,7 @@ type User interface {
 // SetCookie sets the authentication cookie to val for the given domain.
 func SetCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
-		Domain:   zhttp.RemovePort(domain),
+		Domain:   znet.RemovePort(domain),
 		Name:     cookieKey,
 		Value:    val,
 		Path:     "/",
@@ -47,7 +48,7 @@ func SetCookie(w http.ResponseWriter, val, domain string) {
 // browser will set a second cookie.
 func ClearCookie(w http.ResponseWriter, domain string) {
 	http.SetCookie(w, &http.Cookie{
-		Domain:  zhttp.RemovePort(domain),
+		Domain:  znet.RemovePort(domain),
 		Name:    cookieKey,
 		Value:   "",
 		Path:    "/",
