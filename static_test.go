@@ -3,13 +3,17 @@ package zhttp
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
+	"testing/fstest"
 
 	"zgo.at/zstd/ztest"
 )
 
 func TestStatic(t *testing.T) {
+	files := os.DirFS(".")
+
 	tests := []struct {
 		name        string
 		srv         Static
@@ -19,7 +23,7 @@ func TestStatic(t *testing.T) {
 	}{
 		{
 			"no cache, no packed",
-			NewStatic(".", "", nil, nil),
+			NewStatic("", files, nil),
 			httptest.NewRequest("GET", "/static_test.go", nil),
 			200,
 			http.Header{
@@ -29,7 +33,7 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"default cache",
-			NewStatic(".", "", map[string]int{"": 42}, nil),
+			NewStatic("", files, map[string]int{"": 42}),
 			httptest.NewRequest("GET", "/static_test.go", nil),
 			200,
 			http.Header{
@@ -39,7 +43,7 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"cache",
-			NewStatic(".", "", map[string]int{"": 42, "/static_test.go": 666}, nil),
+			NewStatic("", files, map[string]int{"": 42, "/static_test.go": 666}),
 			httptest.NewRequest("GET", "/static_test.go", nil),
 			200,
 			http.Header{
@@ -49,7 +53,7 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"cache glob",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, nil),
+			NewStatic("", files, map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/static_test.go", nil),
 			200,
 			http.Header{
@@ -59,9 +63,9 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"packed cache",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, map[string][]byte{
-				"doesnt_exist_on_fs.txt": []byte("XXXXXXXXXX"),
-			}),
+			NewStatic("",
+				fstest.MapFS{"doesnt_exist_on_fs.txt": {Data: []byte("XXXXXXXXXX")}},
+				map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/doesnt_exist_on_fs.txt", nil),
 			200,
 			http.Header{
@@ -71,9 +75,9 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"packed cache",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, map[string][]byte{
-				"doesnt_exist_on_fs.go": []byte("XXXXXXXXXX"),
-			}),
+			NewStatic("",
+				fstest.MapFS{"doesnt_exist_on_fs.go": {Data: []byte("XXXXXXXXXX")}},
+				map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/doesnt_exist_on_fs.go", nil),
 			200,
 			http.Header{
@@ -84,7 +88,7 @@ func TestStatic(t *testing.T) {
 
 		{
 			"404",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, nil),
+			NewStatic("", files, map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/doesnt_exist_on_fs.go", nil),
 			404,
 			http.Header{
@@ -94,9 +98,9 @@ func TestStatic(t *testing.T) {
 		},
 		{
 			"packed 404",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, map[string][]byte{
-				"doesnt_exist_on_fs.go": []byte("XXXXXXXXXX"),
-			}),
+			NewStatic("",
+				fstest.MapFS{"doesnt_exist_on_fs.go": {Data: []byte("XXXXXXXXXX")}},
+				map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/doesnt_exist_on_in_pack.go", nil),
 			404,
 			http.Header{
@@ -107,7 +111,7 @@ func TestStatic(t *testing.T) {
 
 		{
 			"malicious",
-			NewStatic(".", "", map[string]int{"": 42, "/*.go": 666}, nil),
+			NewStatic("", files, map[string]int{"": 42, "/*.go": 666}),
 			httptest.NewRequest("GET", "/../foo", nil),
 			403,
 			http.Header{
