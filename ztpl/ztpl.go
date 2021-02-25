@@ -5,30 +5,16 @@ import (
 	"bytes"
 	"html/template"
 	"io"
-	"path/filepath"
-	"strings"
+	"io/fs"
+	"os"
 
 	"zgo.at/zhttp/ztpl/internal"
 	"zgo.at/zhttp/ztpl/tplfunc"
-	"zgo.at/zlog"
 )
 
 // Init sets up the templates.
-//
-// TODO: this should use http.FileSystem.
-func Init(path string, pack map[string][]byte) {
-	if pack == nil {
-		internal.Templates.Set(path, nil)
-		Reload()
-		return
-	}
-
-	t := New()
-	for k, v := range pack {
-		k = strings.Trim(strings.TrimPrefix(k, path), "/")
-		t = template.Must(t.New(k).Parse(string(v)))
-	}
-	internal.Templates.Set(path, t)
+func Init(files fs.FS) {
+	internal.Templates.Set(template.Must(New().ParseFS(files, "*.gohtml", "*.gotxt")))
 }
 
 // New creates a new empty template instance.
@@ -40,23 +26,8 @@ func New() *template.Template {
 //
 // Errors are logged but not fatal! This is intentional as you really don't want
 // a simple typo to crash your app.
-func Reload() {
-	hp := internal.Templates.Path() + "/*.gohtml"
-	html, err := filepath.Glob(hp)
-	if err != nil {
-		zlog.Printf("ztpl.Reload: reading templates from %q: %s", hp, err)
-	}
-	tp := internal.Templates.Path() + "/*.gotxt"
-	txt, err := filepath.Glob(tp)
-	if err != nil {
-		zlog.Printf("ztpl.Reload: reading templates from %q: %s", tp, err)
-	}
-
-	t, err := New().ParseFiles(append(html, txt...)...)
-	if err != nil {
-		zlog.Errorf("ztpl.Reload: parsing files: %s (from: %q and %q)", err, hp, tp)
-	}
-	internal.Templates.Set(internal.Templates.Path(), t)
+func Reload(path string) {
+	Init(os.DirFS(path))
 }
 
 // IsLoaded reports if templates have been loaded.

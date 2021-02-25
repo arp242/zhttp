@@ -13,21 +13,13 @@ var Templates = new(LockedTpl)
 // conditions.
 type LockedTpl struct {
 	sync.Mutex
-	t    *template.Template
-	path string
+	t *template.Template
 }
 
-func (t *LockedTpl) Set(path string, tp *template.Template) {
+func (t *LockedTpl) Set(tp *template.Template) {
 	t.Lock()
 	defer t.Unlock()
-	t.path = path
 	t.t = tp
-}
-
-func (t *LockedTpl) Path() string {
-	t.Lock()
-	defer t.Unlock()
-	return t.path
 }
 
 func (t *LockedTpl) Has(name string) bool {
