@@ -102,7 +102,7 @@ func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 			fmt.Printf("TEST MODE, SHUTTING DOWN IN %d SECONDS\n", testMode)
 			go func() {
 				for {
-					time.Sleep(1 * time.Second)
+					time.Sleep(time.Duration(testMode) * time.Second)
 					s <- os.Interrupt
 				}
 			}()

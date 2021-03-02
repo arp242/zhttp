@@ -3,7 +3,7 @@ package zhttp
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -81,7 +81,7 @@ type (
 // HandlerCSP handles CSP errors.
 func HandlerCSP() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		d, _ := ioutil.ReadAll(r.Body)
+		d, _ := io.ReadAll(r.Body)
 		var csp CSPError
 		err := json.Unmarshal(d, &csp)
 
