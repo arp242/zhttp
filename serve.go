@@ -19,43 +19,59 @@ import (
 )
 
 const (
-	ServeTLS      = uint8(0b0001)
-	ServeRedirect = uint8(0b0010)
+	ServeRedirect = uint8(0b0001)
 )
+
+type st struct{}
+
+func (st) String() string { return "signalStop" }
+func (st) Signal()        {}
+
+var signalStop os.Signal = st{}
 
 // Serve a HTTP server with graceful shutdown and reasonable timeouts.
 //
-// If the ReadHeader, Read, Write, or Idle timeouts are 0, then they will be set
-// to 10, 60, 60, and 120 seconds respectively.
+// The ReadHeader, Read, Write, or Idle timeouts are set to 10, 60, 60, and 120
+// seconds respectively if they are 0.
 //
 // Errors from the net/http package are logged via zgo.at/zlog instead of the
 // default log package. "TLS handshake error" are silenced, since there's rarely
 // anything that can be done with that. Define server.ErrorLog if you want the
 // old behaviour back.
 //
-// The server will use TLS if the http.Server has a valid TLSConfig; it will
-// also try to redirect port 80 to the TLS server, but will gracefully fail if
-// the permission for this is denied.
+// The server will use TLS if the http.Server has a valid TLSConfig, and will to
+// redirect port 80 to the TLS server if ServeRedirect is in flags, but will
+// fail gracefully with a warning to stderr if the permission for this is
+// denied.
 //
-// This will return a channel which will send a value after the server is set up
-// and ready to accept connections, and send another value after the server is
-// shut down and stopped accepting connections:
+// The returned channel sends a value after the server is set up and ready to
+// accept connections, and another one after the server is shut down and stopped
+// accepting connections:
 //
-//   ch := zhttp.Serve(..)
+//   ch, _ := zhttp.Serve(..)
 //   <-ch
 //   fmt.Println("Ready to serve!")
 //
 //   <-ch
 //   cleanup()
-func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
-	abs, err := exec.LookPath(os.Args[0])
+//
+// The stop channel can be used to tell the server to shut down gracefully; this
+// is especially useful for tests:
+//
+//   stop := make(chan struct{})
+//   go zhttp.Serve(0, stop, [..])
+//   <-ch // Ready to serve
+//
+//   time.Sleep(1 * time.Second)
+//   stop <- struct{}{}
+func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}), error) {
+	argv0, err := exec.LookPath(os.Args[0])
 	if err != nil {
-		abs = os.Args[0]
+		argv0 = os.Args[0]
 	}
 
+	// Go uses ":80" to listen on all addresses, but also accept "*:80".
 	if strings.HasPrefix(server.Addr, "*:") {
-		// Go uses :80 to listen on all addresses, this makes sure that the
-		// common-ish "*:80" is also accepted.
 		server.Addr = server.Addr[1:]
 	}
 	host, port, err := net.SplitHostPort(server.Addr)
@@ -83,54 +99,52 @@ func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 
 	ln, err := net.Listen("tcp", server.Addr)
 	if err != nil {
-		zlog.Errorf("zhttp.Serve: %s", err)
 		if errors.Is(err, os.ErrPermission) {
 			fmt.Fprintf(os.Stderr, "\nPermission denied to bind to port %s; on Linux, try:\n", port)
-			fmt.Fprintf(os.Stderr, "    sudo setcap 'cap_net_bind_service=+ep' %s\n", abs)
+			fmt.Fprintf(os.Stderr, "    sudo setcap 'cap_net_bind_service=+ep' %s\n", argv0)
 		}
-		os.Exit(1)
+		return nil, fmt.Errorf("zhttp.Serve: %w", err)
 	}
+	// Set back the address; useful when using ":0" for a random port.
+	server.Addr = ln.Addr().String()
 
+	// Listen on signal to stop the server and gracefully shut the lot down.
 	ch := make(chan struct{}, 1)
 	go func() {
 		s := make(chan os.Signal, 1)
 		signal.Notify(s, syscall.SIGHUP, syscall.SIGTERM, os.Interrupt /*SIGINT*/)
-
-		// TODO: might be even better to expose s so tests can send their own
-		// signals whenever they're ready.
-		if testMode > 0 {
-			fmt.Printf("TEST MODE, SHUTTING DOWN IN %d SECONDS\n", testMode)
-			go func() {
-				for {
-					time.Sleep(time.Duration(testMode) * time.Second)
-					s <- os.Interrupt
-				}
-			}()
-		}
+		go func() {
+			<-stop
+			s <- signalStop
+		}()
 		<-s
 
 		err := server.Shutdown(context.Background())
 		if err != nil {
-			zlog.Errorf("server.Shutdown: %s", err)
+			zlog.Errorf("zhttp.Serve shutdown: %s", err)
 		}
 		ln.Close()
+
+		signal.Stop(s)
 		ch <- struct{}{}
 		close(ch)
 	}()
 
+	// Set up main server.
 	go func() {
 		var err error
-		if flags&ServeTLS != 0 {
+		if server.TLSConfig != nil {
 			err = server.ServeTLS(ln, "", "")
 		} else {
 			err = server.Serve(ln)
 		}
 		if err != nil && err != http.ErrServerClosed {
 			zlog.Errorf("zhttp.Serve: %s", err)
-			os.Exit(1)
+			os.Exit(66)
 		}
 	}()
 
+	// Set up http → https redirect.
 	if flags&ServeRedirect != 0 {
 		go func() {
 			err := http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
@@ -140,14 +154,14 @@ func Serve(flags uint8, testMode int, server *http.Server) chan (struct{}) {
 					fmt.Fprintf(os.Stderr,
 						"\x1b[1mWARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\x1b[0m\n",
 						port)
-					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try: sudo setcap 'cap_net_bind_service=+ep' %s\n", abs)
+					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try: sudo setcap 'cap_net_bind_service=+ep' %s\n", argv0)
 				}
 			}
 		}()
 	}
 
-	ch <- struct{}{}
-	return ch
+	ch <- struct{}{} // Ready to accept connections.
+	return ch, nil
 }
 
 func logwrap() *log.Logger {
