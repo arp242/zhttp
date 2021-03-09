@@ -104,7 +104,8 @@ func TestTemplateExecution(m *testing.M, ignore ...string) int {
 	}
 
 	ran := Trace(false).Names()
-	unrun := sort.StringSlice(zstring.Difference(List(), ran, ignore))
+	unrun := zstring.Difference(List(), ran, ignore)
+	sort.Strings(unrun)
 	if len(unrun) == 0 {
 		return 0
 	}
