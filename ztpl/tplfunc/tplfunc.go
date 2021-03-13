@@ -53,7 +53,22 @@ func DerefString(s *string) string {
 // Unsafe converts a string to template.HTML, preventing any escaping.
 //
 // Can be dangerous if used on untrusted input!
-func Unsafe(s string) template.HTML { return template.HTML(s) }
+func Unsafe(s interface{}) template.HTML {
+	switch ss := s.(type) {
+	default:
+		panic(fmt.Sprintf("ztpl.Unsafe: unsupported type: %T", s))
+	case string:
+		return template.HTML(ss)
+	case []byte:
+		return template.HTML(ss)
+	case template.HTML:
+		return template.HTML(ss)
+	case fmt.Stringer:
+		return template.HTML(ss.String())
+	case error:
+		return template.HTML(ss.Error())
+	}
+}
 
 // UnsafeJS converts a string to template.JS, preventing any escaping.
 //

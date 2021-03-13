@@ -1,6 +1,7 @@
 package tplfunc
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"testing"
@@ -285,6 +286,43 @@ func TestUCFirst(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("\ngot:  %q\nwant: %q", got, tt.want)
 			}
+		})
+	}
+}
+
+type str int
+
+func (str) String() string { return "<&>" }
+
+func TestUnsafe(t *testing.T) {
+	var b []byte
+
+	tests := []struct {
+		in   interface{}
+		want template.HTML
+	}{
+		{"", ""},
+		{"<x>", "<x>"},
+		{"<>", "<>"},
+		{[]byte("<>"), "<>"},
+		{b, ""},
+		{template.HTML("<>"), "<>"},
+		{str(0), "<&>"},
+		{errors.New("<>"), "<>"},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			got := Unsafe(tt.in)
+			if got != tt.want {
+				t.Errorf("\ngot:  %q\nwant: %q", got, tt.want)
+			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("\ngot:  %#v\nwant: %#v", got, tt.want)
+			// }
+			// if d := ztest.Diff(got, tt.want); d != "" {
+			// 	t.Errorf(d)
+			// }
 		})
 	}
 }
