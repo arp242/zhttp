@@ -19,8 +19,13 @@ import (
 )
 
 // Init sets up the templates.
-func Init(files fs.FS) {
-	internal.Templates.Set(template.Must(New().ParseFS(files, "*.gohtml", "*.gotxt")))
+func Init(files fs.FS) error {
+	t, err := New().ParseFS(files, "*.gohtml", "*.gotxt")
+	if err != nil {
+		return fmt.Errorf("ztpl.Init: %w", err)
+	}
+	internal.Templates.Set(t)
+	return nil
 }
 
 // New creates a new empty template instance.
@@ -29,11 +34,8 @@ func New() *template.Template {
 }
 
 // Reload the templates from the filesystem.
-//
-// Errors are logged but not fatal! This is intentional as you really don't want
-// a simple typo to crash your app.
-func Reload(path string) {
-	Init(os.DirFS(path))
+func Reload(path string) error {
+	return Init(os.DirFS(path))
 }
 
 // IsLoaded reports if templates have been loaded.
