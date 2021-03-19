@@ -1,7 +1,6 @@
 package zhttp
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -16,6 +15,8 @@ import (
 	"time"
 
 	"zgo.at/zlog"
+	"zgo.at/zstd/zstring"
+	"zgo.at/zstd/zsync"
 )
 
 const (
@@ -94,7 +95,20 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 		server.IdleTimeout = 120 * time.Second
 	}
 	if server.ErrorLog == nil {
-		server.ErrorLog = logwrap()
+		// Don't log errors we don't care about:
+		//
+		//   http: TLS handshake error from %s: %s
+		//   http2: received GOAWAY [FrameHeader GOAWAY len=20], starting graceful shutdown
+		//   http2: server: error reading preface from client %s: %s
+		//   http2: timeout waiting for SETTINGS frames from %v
+		//
+		// This is people sending wrong data; not much we can do about that.
+		server.ErrorLog = LogWrap(
+			"http: TLS handshake",
+			"http2: received GOAWAY",
+			"http2: server: error reading preface",
+			"http2: timeout waiting for SETTINGS",
+			"write tcp ")
 	}
 
 	ln, err := net.Listen("tcp", server.Addr)
@@ -164,8 +178,9 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 	return ch, nil
 }
 
-func logwrap() *log.Logger {
-	b := new(bytes.Buffer)
+// LogWrap returns a log.Logger which ignores any lines starting with prefixes.
+func LogWrap(prefixes ...string) *log.Logger {
+	b := new(zsync.Buffer)
 	ll := log.New(b, "", 0)
 
 	go func() {
@@ -179,21 +194,7 @@ func logwrap() *log.Logger {
 				continue
 			}
 
-			l = strings.TrimRight(l, "\n")
-
-			// Don't log errors we don't care about:
-			//
-			//   http: TLS handshake error from %s: %s
-			//   http2: received GOAWAY [FrameHeader GOAWAY len=20], starting graceful shutdown
-			//   http2: server: error reading preface from client %s: %s
-			//   http2: timeout waiting for SETTINGS frames from %v
-			//
-			// This is people sending wrong data; not much we can do about that.
-			if strings.HasPrefix(l, "http: TLS handshake") ||
-				strings.HasPrefix(l, "http2: received GOAWAY") ||
-				strings.HasPrefix(l, "http2: server: error reading preface") ||
-				strings.HasPrefix(l, "http2: timeout waiting for SETTINGS") ||
-				strings.HasPrefix(l, "write tcp ") {
+			if zstring.HasPrefixes(strings.TrimRight(l, "\n"), prefixes...) {
 				continue
 			}
 

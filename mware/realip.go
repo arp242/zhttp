@@ -10,8 +10,9 @@ import (
 // RealIP sets the RemoteAddr to X-Real-Ip, X-Forwarded-For, or the RemoteAddr
 // without a port.
 //
-// The end result willl never have a source port set.
-func RealIP() func(http.Handler) http.Handler {
+// The end result willl never have a source port set. It will ignore local and
+// private addresses such as 127.0.0.1, 192.168.1.1, etc.
+func RealIP(never ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r.RemoteAddr = realIP(r)
