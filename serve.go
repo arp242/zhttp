@@ -180,7 +180,7 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 
 // LogWrap returns a log.Logger which ignores any lines starting with prefixes.
 func LogWrap(prefixes ...string) *log.Logger {
-	b := new(zsync.Buffer)
+	b := zsync.NewBuffer(nil)
 	ll := log.New(b, "", 0)
 
 	go func() {
