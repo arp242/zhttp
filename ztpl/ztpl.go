@@ -1,16 +1,18 @@
 // Package ztpl implements the loading and reloading of templates.
 package ztpl
 
+// TODO: move this to zstd/ztemplate
+
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	htmlTemplate "html/template"
 	"io"
 	"io/fs"
 	"os"
 	"sort"
 	"strings"
-	"testing"
+	textTemplate "text/template"
 
 	"zgo.at/zhttp/ztpl/internal"
 	"zgo.at/zhttp/ztpl/tplfunc"
@@ -19,24 +21,30 @@ import (
 )
 
 // Init sets up the templates.
+//
+// This assumes that HTML templates have the .gohtml extension, and that text
+// templates have the .gotxt extension.
 func Init(files fs.FS) error {
-	t, err := New().ParseFS(files, "*.gohtml", "*.gotxt")
-	if err != nil {
+	html, err := htmlTemplate.New("").Option("missingkey=error").
+		Funcs(tplfunc.FuncMap).Funcs(tplfunc.FuncMapHTML).
+		ParseFS(files, "*.gohtml")
+	if err != nil && !strings.Contains(err.Error(), "matches no files: `*.gohtml`") {
 		return fmt.Errorf("ztpl.Init: %w", err)
 	}
-	internal.Templates.Set(t)
+
+	text, err := textTemplate.New("").Option("missingkey=error").
+		Funcs(tplfunc.FuncMap).
+		ParseFS(files, "*.gotxt")
+	if err != nil && !strings.Contains(err.Error(), "matches no files: `*.gotxt`") {
+		return fmt.Errorf("ztpl.Init: %w", err)
+	}
+
+	internal.Templates.Set(html, text)
 	return nil
 }
 
-// New creates a new empty template instance.
-func New() *template.Template {
-	return template.New("").Option("missingkey=error").Funcs(tplfunc.FuncMap)
-}
-
 // Reload the templates from the filesystem.
-func Reload(path string) error {
-	return Init(os.DirFS(path))
-}
+func Reload(path string) error { return Init(os.DirFS(path)) }
 
 // IsLoaded reports if templates have been loaded.
 func IsLoaded() bool { return internal.Templates != nil }
@@ -47,6 +55,28 @@ func List() []string {
 		return nil
 	}
 	return internal.Templates.List()
+}
+
+// HasTemplate reports if this template is loaded.
+func HasTemplate(name string) bool { return internal.Templates != nil && internal.Templates.Has(name) }
+
+// Execute a named template.
+func Execute(w io.Writer, name string, data interface{}) error {
+	return internal.Templates.ExecuteTemplate(w, name, data)
+}
+
+// ExecuteString a named template and return the data as a string.
+func ExecuteString(name string, data interface{}) (string, error) {
+	w := new(bytes.Buffer)
+	err := Execute(w, name, data)
+	return w.String(), err
+}
+
+// ExecuteBytes a named template and return the data as a byte slice.
+func ExecuteBytes(name string, data interface{}) ([]byte, error) {
+	w := new(bytes.Buffer)
+	err := Execute(w, name, data)
+	return w.Bytes(), err
 }
 
 // Trace enables tracking of all template executions. When this is disabled the
@@ -75,6 +105,8 @@ func Trace(on bool) internal.Trace {
 	return r
 }
 
+var stderr io.Writer = os.Stderr
+
 // TestTemplateExecution tests if all templates loaded through ztpl are
 // executed.
 //
@@ -86,7 +118,8 @@ func Trace(on bool) internal.Trace {
 //   func TestMain(m *testing.M) {
 //       os.Exit(ztpl.TestTemplateExecution(m, "ignore_this.gohtml"))
 //   }
-func TestTemplateExecution(m *testing.M, ignore ...string) int {
+//func TestTemplateExecution(m *testing.M, ignore ...string) int {
+func TestTemplateExecution(m interface{ Run() int }, ignore ...string) int {
 	Trace(true)
 	c := m.Run()
 
@@ -96,7 +129,7 @@ func TestTemplateExecution(m *testing.M, ignore ...string) int {
 	// TODO: provide option to list which templates were executed when -run is
 	// given; maybe through env? Can be useful for testing and seeing which
 	// templates are being run.
-	if c > 1 {
+	if c >= 1 {
 		return c
 	}
 	for _, a := range os.Args {
@@ -112,34 +145,10 @@ func TestTemplateExecution(m *testing.M, ignore ...string) int {
 		return 0
 	}
 
-	fmt.Fprintln(os.Stderr, "    --- FAIL: ztpl.TestTemplateExecution")
-	fmt.Fprintf(os.Stderr, "\t\tDidn't execute the templates:\n\t\t\t%s\n", strings.Join(unrun, "\n\t\t\t"))
+	fmt.Fprintln(stderr, "    --- FAIL: ztpl.TestTemplateExecution")
+	fmt.Fprintf(stderr, "\t\tDidn't execute the templates:\n\t\t\t%s\n", strings.Join(unrun, "\n\t\t\t"))
 	if zruntime.TestVerbose() {
-		fmt.Fprintf(os.Stderr, "\n\t\tTemplates executed: %s\n\n", ran)
+		fmt.Fprintf(stderr, "\n\t\tTemplates executed: %s\n\n", ran)
 	}
 	return 1
-}
-
-// HasTemplate reports if this template is loaded.
-func HasTemplate(name string) bool {
-	return internal.Templates != nil && internal.Templates.Has(name)
-}
-
-// Execute a named template.
-func Execute(w io.Writer, name string, data interface{}) error {
-	return internal.Templates.ExecuteTemplate(w, name, data)
-}
-
-// ExecuteBytes a named template and return the data as bytes.
-func ExecuteBytes(name string, data interface{}) ([]byte, error) {
-	w := new(bytes.Buffer)
-	err := internal.Templates.ExecuteTemplate(w, name, data)
-	return w.Bytes(), err
-}
-
-// ExecuteString a named template and return the data as a string.
-func ExecuteString(name string, data interface{}) (string, error) {
-	w := new(bytes.Buffer)
-	err := internal.Templates.ExecuteTemplate(w, name, data)
-	return w.String(), err
 }

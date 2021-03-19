@@ -15,31 +15,34 @@ import (
 func Add(name string, f interface{}) { FuncMap[name] = f }
 
 // FuncMap contains all the template functions.
-var FuncMap = template.FuncMap{
-	"deref_s":      DerefString,
+var FuncMap = map[string]interface{}{
+	"daterange":  Daterange,
+	"deref_s":    DerefString,
+	"div":        Div,
+	"duration":   Duration,
+	"has_prefix": HasPrefix,
+	"has_suffix": HasSuffix,
+	"if2":        If2,
+	"join":       strings.Join,
+	"json":       JSON,
+	"map":        Map,
+	"mult":       Mult,
+	"nformat":    Number,
+	"pp":         PP,
+	"string":     String, // TODO: remove
+	"sub":        Sub,
+	"substr":     Substr,
+	"sum":        Sum,
+	"tformat":    Time,
+	"ucfirst":    UCFirst,
+}
+
+var FuncMapHTML = map[string]interface{}{
+	"checkbox":     Checkbox,
+	"checked":      Checked,
+	"option_value": OptionValue,
 	"unsafe":       Unsafe,
 	"unsafe_js":    UnsafeJS,
-	"string":       String,
-	"has_prefix":   HasPrefix,
-	"has_suffix":   HasSuffix,
-	"ucfirst":      UCFirst,
-	"checked":      Checked,
-	"nformat":      Number,
-	"tformat":      Time,
-	"sum":          Sum,
-	"sub":          Sub,
-	"mult":         Mult,
-	"div":          Div,
-	"if2":          If2,
-	"substr":       Substr,
-	"pp":           PP,
-	"json":         JSON,
-	"map":          Map,
-	"option_value": OptionValue,
-	"checkbox":     Checkbox,
-	"daterange":    Daterange,
-	"duration":     Duration,
-	"join":         strings.Join,
 }
 
 // DerefString dereferences a string pointer, returning "" if it's nil.
