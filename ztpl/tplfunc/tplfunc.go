@@ -247,8 +247,18 @@ func OptionValue(current, value string) template.HTMLAttr {
 //
 // It also adds a hidden input with the value "off" so that's sent to the server
 // when the checkbox isn't sent, which greatly simplifies backend handling.
-func Checkbox(current bool, name string) template.HTML {
-	if current {
+func Checkbox(current interface{}, name string) template.HTML {
+	var c bool
+	switch cc := current.(type) {
+	case bool:
+		c = cc
+	case interface{ Bool() bool }:
+		c = cc.Bool()
+	default:
+		panic(fmt.Sprintf("ztpl.Checkbox: unknown type %T", cc))
+	}
+
+	if c {
 		return template.HTML(fmt.Sprintf(`
 			<input type="checkbox" name="%s" id="%[1]s" checked>
 			<input type="hidden" name="%[1]s" value="off">
