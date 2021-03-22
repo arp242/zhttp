@@ -94,7 +94,10 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if cache == -100 {
-			cache = s.cacheControl[""]
+			cache = s.cacheControl["*"]
+			if cache == 0 {
+				cache = s.cacheControl[""]
+			}
 		}
 
 		// TODO: use a more clever scheme where max-age and no-{cache,store} can be

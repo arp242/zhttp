@@ -17,33 +17,23 @@ import (
 	"zgo.at/zlog"
 )
 
-type (
-	coder interface {
-		Code() int
-		Error() string
-	}
-	errorJSON interface {
-		ErrorJSON() ([]byte, error)
-	}
-	stackTracer interface {
-		StackTrace() string
-	}
-)
-
 // UserError modifies an error for user display.
 //
 //   - Removes any stack traces from zgo.at/errors or github.com/pkg/errors.
 //   - Reformats some messages to be more user-friendly.
 //   - "Hides" messages behind an error code for 5xx errors (you need to log those yourself).
 func UserError(err error) (int, error) {
-	if _, ok := err.(stackTracer); ok {
+	if _, ok := err.(interface{ StackTrace() string }); ok {
 		err = errors.Unwrap(err)
 	}
 
 	var (
-		stErr coder
-		dErr  *DecodeError
-		code  = 500
+		stErr interface {
+			Code() int
+			Error() string
+		}
+		dErr *DecodeError
+		code = 500
 	)
 	switch {
 	case errors.As(err, &stErr): // zgo.at/guru with an embedded status code.
@@ -140,7 +130,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 
 		if jErr, ok := userErr.(json.Marshaler); ok {
 			j, err = jErr.MarshalJSON()
-		} else if jErr, ok := userErr.(errorJSON); ok {
+		} else if jErr, ok := userErr.(interface{ ErrorJSON() ([]byte, error) }); ok {
 			j, err = jErr.ErrorJSON()
 		} else {
 			j, err = json.Marshal(map[string]string{"error": userErr.Error()})
