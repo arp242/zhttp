@@ -279,9 +279,9 @@ var now = func() time.Time { return time.Now() }
 // it.
 func Daterange(tz *time.Location, start, end time.Time) string {
 	// Set the same time, to make comparisons easier.
-	today := ztime.StartOfDay(now().In(tz))
-	start = ztime.StartOfDay(start.In(today.Location()))
-	end = ztime.StartOfDay(end.In(today.Location()))
+	today := ztime.StartOf(now().In(tz), ztime.Day)
+	start = ztime.StartOf(start.In(today.Location()), ztime.Day)
+	end = ztime.StartOf(end.In(today.Location()), ztime.Day)
 
 	months, days := timeDiff(start, end)
 
