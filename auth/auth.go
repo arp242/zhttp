@@ -14,6 +14,7 @@ import (
 	"zgo.at/zhttp"
 	"zgo.at/zhttp/ctxkey"
 	"zgo.at/zstd/znet"
+	"zgo.at/zstd/zstring"
 )
 
 var (
@@ -58,13 +59,13 @@ func ClearCookie(w http.ResponseWriter, domain string) {
 
 // Add user auth to an endpoint.
 //
-// The load callback is called with the value of the authentication cookie.
-//
-// The User is added to the context.
+// The load callback is called with the value of the authentication cookie. The
+// User is added to the context.
 //
 // POST, PATH, PUT, and DELETE requests will check the CSRF token from the
-// "csrf" field with the value from User.CSRFToken()
-func Add(load loadFunc) func(http.Handler) http.Handler {
+// "csrf" field with the value from User.CSRFToken(). The list of paths in
+// noCSRF will be excluded for CSRF checks.
+func Add(load loadFunc, noCSRF ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c, err := r.Cookie(cookieKey)
@@ -88,32 +89,34 @@ func Add(load loadFunc) func(http.Handler) http.Handler {
 			}
 
 			// Check CSRF.
-			switch r.Method {
-			case http.MethodDelete, http.MethodPatch, http.MethodPost, http.MethodPut:
-				var err error
-				if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-					err = r.ParseMultipartForm(32 << 20) // 32M, http.defaultMaxMemory
-				} else {
-					err = r.ParseForm()
-				}
-				if err != nil {
-					w.WriteHeader(500)
-					fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: should probably use errpage?
-					return
-				}
-
-				token := r.FormValue("csrf")
-				r.Form.Del("csrf")
-				if token == "" {
-					w.WriteHeader(http.StatusForbidden)
-					fmt.Fprintln(w, "CSRF token is empty") // TODO: should probably use errpage?
-					return
-				} else {
-					t := u.CSRFToken()
-					if t != "" && token != t {
-						w.WriteHeader(http.StatusForbidden)
-						fmt.Fprintln(w, "Invalid CSRF token") // TODO: should probably use errpage?
+			if !zstring.Contains(noCSRF, r.URL.Path) {
+				switch r.Method {
+				case http.MethodDelete, http.MethodPatch, http.MethodPost, http.MethodPut:
+					var err error
+					if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+						err = r.ParseMultipartForm(32 << 20) // 32M, http.defaultMaxMemory
+					} else {
+						err = r.ParseForm()
+					}
+					if err != nil {
+						w.WriteHeader(500)
+						fmt.Fprintf(w, "zhttp.ParseForm: %s", err) // TODO: should probably use errpage?
 						return
+					}
+
+					token := r.FormValue("csrf")
+					r.Form.Del("csrf")
+					if token == "" {
+						w.WriteHeader(http.StatusForbidden)
+						fmt.Fprintln(w, "CSRF token is empty") // TODO: should probably use errpage?
+						return
+					} else {
+						t := u.CSRFToken()
+						if t != "" && token != t {
+							w.WriteHeader(http.StatusForbidden)
+							fmt.Fprintln(w, "Invalid CSRF token") // TODO: should probably use errpage?
+							return
+						}
 					}
 				}
 			}
