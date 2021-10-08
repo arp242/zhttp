@@ -101,6 +101,7 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 		//   http2: received GOAWAY [FrameHeader GOAWAY len=20], starting graceful shutdown
 		//   http2: server: error reading preface from client %s: %s
 		//   http2: timeout waiting for SETTINGS frames from %v
+		//   http: URL query contains semicolon, which is no longer a supported separator; parts of the query may be stripped when parsed; see golang.org/issue/25192
 		//
 		// This is people sending wrong data; not much we can do about that.
 		server.ErrorLog = LogWrap(
@@ -108,6 +109,7 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 			"http2: received GOAWAY",
 			"http2: server: error reading preface",
 			"http2: timeout waiting for SETTINGS",
+			"http: URL query contains semicolon",
 			"write tcp ")
 	}
 
