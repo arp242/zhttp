@@ -28,7 +28,7 @@ func TestStatic(t *testing.T) {
 			200,
 			http.Header{
 				"Cache-Control": nil,
-				"Content-Type":  {"application/octet-stream"},
+				"Content-Type":  {"text/x-go; charset=utf-8"},
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestStatic(t *testing.T) {
 			200,
 			http.Header{
 				"Cache-Control": {"public, max-age=42"},
-				"Content-Type":  {"application/octet-stream"},
+				"Content-Type":  {"text/x-go; charset=utf-8"},
 			},
 		},
 		{
@@ -48,7 +48,7 @@ func TestStatic(t *testing.T) {
 			200,
 			http.Header{
 				"Cache-Control": {"public, max-age=666"},
-				"Content-Type":  {"application/octet-stream"},
+				"Content-Type":  {"text/x-go; charset=utf-8"},
 			},
 		},
 		{
@@ -58,7 +58,7 @@ func TestStatic(t *testing.T) {
 			200,
 			http.Header{
 				"Cache-Control": {"public, max-age=666"},
-				"Content-Type":  {"application/octet-stream"},
+				"Content-Type":  {"text/x-go; charset=utf-8"},
 			},
 		},
 		{
@@ -82,7 +82,7 @@ func TestStatic(t *testing.T) {
 			200,
 			http.Header{
 				"Cache-Control": {"public, max-age=666"},
-				"Content-Type":  {"application/octet-stream"},
+				"Content-Type":  {"text/x-go; charset=utf-8"},
 			},
 		},
 
