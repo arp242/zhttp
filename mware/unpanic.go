@@ -3,13 +3,13 @@ package mware
 import (
 	"fmt"
 	"net/http"
-	"runtime/debug"
 
 	"zgo.at/zhttp"
+	"zgo.at/zstd/zdebug"
 )
 
 // Unpanic recovers from panics in handlers and calls ErrPage().
-func Unpanic() func(http.Handler) http.Handler {
+func Unpanic(filterStack ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
@@ -24,7 +24,8 @@ func Unpanic() func(http.Handler) http.Handler {
 						r.Method, r.Host, r.RequestURI, rec, r.Form, r.Header)
 				}
 
-				err = fmt.Errorf("%w\n%s", err, debug.Stack())
+				err = fmt.Errorf("%w\n%s", err, zdebug.Stack(append(filterStack,
+					"net/http", "zgo.at/zhttp", "github.com/go-chi/chi")...))
 				zhttp.ErrPage(w, r, err)
 			}()
 
