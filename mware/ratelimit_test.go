@@ -27,46 +27,43 @@ func TestRatelimit(t *testing.T) {
 	})(handle{})
 
 	var (
+		n    = 2
 		wg   sync.WaitGroup
 		lock sync.Mutex
 	)
-	wg.Add(2)
-	go func() { // goroutine to detect/test race.
-		defer wg.Done()
-		rr := ztest.HTTP(t, nil, handler)
-		lock.Lock()
-		defer lock.Unlock()
-		ztest.Code(t, rr, 200)
-	}()
-	go func() {
-		defer wg.Done()
-		rr := ztest.HTTP(t, nil, handler)
-		lock.Lock()
-		defer lock.Unlock()
-		ztest.Code(t, rr, 200)
-	}()
-	wg.Wait()
-
-	rr := ztest.HTTP(t, nil, handler)
-	ztest.Code(t, rr, 429)
-	if rr.Body.String() != "oh noes" {
-		t.Errorf("wrong body: %q", rr.Body.String())
+	send := func(n int) {
+		wg.Add(n)
+		for i := 0; i < n; i++ {
+			func(i int) {
+				go func() { // goroutine to detect/test race.
+					defer wg.Done()
+					rr := ztest.HTTP(t, nil, handler)
+					lock.Lock()
+					defer lock.Unlock()
+					ztest.Code(t, rr, 200)
+				}()
+			}(i)
+		}
+		wg.Wait()
 	}
 
-	time.Sleep(1 * time.Second)
-	rr = ztest.HTTP(t, nil, handler)
-	ztest.Code(t, rr, 429)
-	if rr.Body.String() != "oh noes" {
-		t.Errorf("wrong body: %q", rr.Body.String())
-	}
+	for i := 0; i < 2; i++ {
+		send(n)
 
-	time.Sleep(1 * time.Second)
-	rr = ztest.HTTP(t, nil, handler)
-	ztest.Code(t, rr, 200)
-	rr = ztest.HTTP(t, nil, handler)
-	ztest.Code(t, rr, 429)
-	if rr.Body.String() != "oh noes" {
-		t.Errorf("wrong body: %q", rr.Body.String())
+		rr := ztest.HTTP(t, nil, handler)
+		ztest.Code(t, rr, 429)
+		if rr.Body.String() != "oh noes" {
+			t.Errorf("wrong body: %q", rr.Body.String())
+		}
+
+		time.Sleep(1 * time.Second) // Rate limit is 2 seconds
+		rr = ztest.HTTP(t, nil, handler)
+		ztest.Code(t, rr, 429)
+		if rr.Body.String() != "oh noes" {
+			t.Errorf("wrong body: %q", rr.Body.String())
+		}
+
+		time.Sleep(1100 * time.Millisecond) // Rate limit reset
 	}
 }
 

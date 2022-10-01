@@ -77,17 +77,27 @@ func (m *RatelimitMemory) Grant(key string, n int, period int64) (bool, int) {
 	accesstime := time.Now().Unix()
 
 	m.Lock()
-	m.rates[key] = append(m.rates[key], accesstime)
-	for i := range m.rates[key] {
+	defer m.Unlock()
+
+	var i int
+	for i = range m.rates[key] {
 		if m.rates[key][i] > accesstime-period {
-			if i > 0 {
-				m.rates[key] = m.rates[key][i:]
-			}
 			break
 		}
 	}
-	l := len(m.rates[key])
-	m.Unlock()
+	if i > 0 {
+		m.rates[key] = m.rates[key][i+1:]
+	}
 
-	return n >= l, n - l
+	var (
+		l         = len(m.rates[key])
+		grant     = n > l
+		remaining = 0
+	)
+	if grant {
+		m.rates[key] = append(m.rates[key], accesstime)
+		remaining = n - l
+	}
+
+	return grant, remaining
 }
