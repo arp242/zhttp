@@ -242,11 +242,16 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 	case []byte:
 		j = ii
 	default:
-		var err error
-		j, err = json.MarshalIndent(i, "", "  ")
+		enc := json.NewEncoder(w)
+		enc.NullArray(false)
+		enc.SetIndent("", "  ")
+		err := enc.Encode(i)
 		if err != nil {
 			return err
 		}
+
+		writeStatus(w, 200, "application/json; charset=utf-8")
+		return nil
 	}
 
 	writeStatus(w, 200, "application/json; charset=utf-8")

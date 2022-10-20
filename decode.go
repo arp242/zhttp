@@ -5,8 +5,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
-	"github.com/monoculum/formam"
+	"github.com/monoculum/formam/v3"
 	"zgo.at/guru"
 	"zgo.at/json"
 	"zgo.at/zlog"
@@ -43,6 +44,11 @@ func (e DecodeError) Error() string {
 	return s + e.err.Error()
 }
 
+var formamOpts = &formam.DecoderOptions{
+	TagName:     "json",
+	TimeFormats: []string{"2006-01-02", time.RFC3339},
+}
+
 // Decode request parameters from a form, JSON body, or query parameters.
 //
 // Returns one of the Content* constants, which is useful if you want to
@@ -60,7 +66,7 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 	switch {
 	case r.Method == http.MethodGet:
 		c = ContentQuery
-		err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.URL.Query(), dst)
+		err = formam.NewDecoder(formamOpts).Decode(r.URL.Query(), dst)
 	case ct == "application/json":
 		c = ContentJSON
 		err = json.NewDecoder(r.Body).Decode(dst)
@@ -68,13 +74,13 @@ func Decode(r *http.Request, dst interface{}) (uint8, error) {
 		c = ContentForm
 		err = r.ParseForm()
 		if err == nil {
-			err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
+			err = formam.NewDecoder(formamOpts).Decode(r.Form, dst)
 		}
 	case ct == "multipart/form-data":
 		c = ContentForm
 		err = r.ParseMultipartForm(32 << 20) // 32MB, http.defaultMaxMemory
 		if err == nil {
-			err = formam.NewDecoder(&formam.DecoderOptions{TagName: "json"}).Decode(r.Form, dst)
+			err = formam.NewDecoder(formamOpts).Decode(r.Form, dst)
 		}
 	default:
 		c = ContentUnsupported

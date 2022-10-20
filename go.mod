@@ -3,10 +3,11 @@ module zgo.at/zhttp
 go 1.18
 
 require (
-	github.com/monoculum/formam v3.5.5+incompatible
+	// https://github.com/monoculum/formam/pull/49
+	github.com/monoculum/formam/v3 v3.6.1-0.20221019142301-7634f9dcc123
 	zgo.at/guru v1.1.0
-	zgo.at/json v0.0.0-20211017213340-cc8bf51df08c
+	zgo.at/json v0.0.0-20221020004326-fe4f75bb278e
 	zgo.at/zlog v0.0.0-20201213081304-1dc74ce06e5f
-	zgo.at/zstd v0.0.0-20220622111728-4a78555db760
-	zgo.at/ztpl v0.0.0-20211128061406-6ff34b1256c4
+	zgo.at/zstd v0.0.0-20221020020100-2da7bd798a12
+	zgo.at/ztpl v0.0.0-20221020022020-7d727686f6a2
 )
