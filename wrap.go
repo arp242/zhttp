@@ -245,12 +245,13 @@ func JSON(w http.ResponseWriter, i interface{}) error {
 		enc := json.NewEncoder(w)
 		enc.NullArray(false)
 		enc.SetIndent("", "  ")
+
+		writeStatus(w, 200, "application/json; charset=utf-8")
 		err := enc.Encode(i)
 		if err != nil {
 			return err
 		}
 
-		writeStatus(w, 200, "application/json; charset=utf-8")
 		return nil
 	}
 
