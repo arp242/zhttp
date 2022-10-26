@@ -67,6 +67,7 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			Static404(w, r)
+			return
 		}
 		http.Error(w, err.Error(), 500)
 		return
