@@ -3,8 +3,6 @@ package mware
 import (
 	"net/http"
 	"net/http/httptest"
-	"strconv"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -33,7 +31,7 @@ func TestRatelimit(t *testing.T) {
 		wg   sync.WaitGroup
 		lock sync.Mutex
 	)
-	send := func(n int) { // Send n requests, testing if they return 200.
+	send := func(n int) {
 		wg.Add(n)
 		for i := 0; i < n; i++ {
 			func(i int) {
@@ -49,34 +47,6 @@ func TestRatelimit(t *testing.T) {
 		wg.Wait()
 	}
 
-	ints := func(s ...string) []int {
-		var (
-			err error
-			r   = make([]int, len(s))
-		)
-		for i := range s {
-			r[i], err = strconv.Atoi(s[i])
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-		return r
-	}
-	checkHeaders := func(rr *httptest.ResponseRecorder, wantLimit, wantRemain, wantReset int) {
-		t.Helper()
-		h := ints(
-			rr.Header().Get("X-Rate-Limit-Limit"),
-			rr.Header().Get("X-Rate-Limit-Remaining"),
-			rr.Header().Get("X-Rate-Limit-Reset"))
-		if h[0] != wantLimit || h[1] != wantRemain || h[2] != wantReset {
-			t.Errorf("wrong X-Rate-Limit headers:\n"+strings.Repeat("%-24s have: %-4d want: %-4d\n", 3),
-				"X-Rate-Limit-Limit", h[0], wantLimit,
-				"X-Rate-Limit-Remaining", h[1], wantRemain,
-				"X-Rate-Limit-Reset", h[2], wantReset,
-			)
-		}
-	}
-
 	for i := 0; i < 2; i++ {
 		send(n)
 
@@ -85,16 +55,13 @@ func TestRatelimit(t *testing.T) {
 		if rr.Body.String() != "oh noes" {
 			t.Errorf("wrong body: %q", rr.Body.String())
 		}
-		checkHeaders(rr, 2, 0, 2)
 
 		time.Sleep(1 * time.Second) // Rate limit is 2 seconds
-
 		rr = ztest.HTTP(t, nil, handler)
 		ztest.Code(t, rr, 429)
 		if rr.Body.String() != "oh noes" {
 			t.Errorf("wrong body: %q", rr.Body.String())
 		}
-		checkHeaders(rr, 2, 0, 1)
 
 		time.Sleep(1100 * time.Millisecond) // Rate limit reset
 	}
