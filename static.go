@@ -14,6 +14,7 @@ import (
 type Static struct {
 	domain       string
 	cacheControl map[string]int
+	headers      map[string]map[string]string // Headers for specific URLs
 	files        fs.FS
 }
 
@@ -49,11 +50,16 @@ func NewStatic(domain string, files fs.FS, cache map[string]int) Static {
 		}
 	}
 
-	return Static{domain: domain, cacheControl: cache, files: files}
+	return Static{domain: domain, cacheControl: cache, files: files, headers: make(map[string]map[string]string)}
 }
 
 var Static404 = func(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, fmt.Sprintf("file not found: %q", r.RequestURI), 404)
+}
+
+// Header sets headers for a path, overriding anything else.
+func (s *Static) Header(path string, h map[string]string) {
+	s.headers[path] = h
 }
 
 func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +125,13 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Cache-Control", cc)
 		}
 	}
+
+	if h, ok := s.headers[r.URL.Path]; ok {
+		for k, v := range h {
+			w.Header().Set(k, v)
+		}
+	}
+
 	w.WriteHeader(200)
 	w.Write(d)
 }
