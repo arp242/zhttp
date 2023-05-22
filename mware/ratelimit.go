@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"zgo.at/zlog"
 )
 
 type RatelimitOptions struct {
@@ -35,6 +37,8 @@ func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 		msg = []byte("rate limited exceeded")
 	}
 
+	l := zlog.Module("ratelimit")
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			limit, period := opts.Limit(r)
@@ -43,6 +47,13 @@ func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
 			w.Header().Add("X-Rate-Limit-Remaining", strconv.Itoa(remaining))
 			w.Header().Add("X-Rate-Limit-Reset", strconv.FormatInt(period, 10))
 			if !granted {
+				l.Fields(zlog.F{
+					"host":      r.Host,
+					"url":       r.URL.String(),
+					"limit":     limit,
+					"remaining": remaining,
+					"reset":     period,
+				}).Debug("rate limited")
 				w.WriteHeader(http.StatusTooManyRequests)
 				w.Write(msg)
 				return
