@@ -49,22 +49,22 @@ var signalStop os.Signal = st{}
 // accept connections, and another one after the server is shut down and stopped
 // accepting connections:
 //
-//   ch, _ := zhttp.Serve(..)
-//   <-ch
-//   fmt.Println("Ready to serve!")
+//	ch, _ := zhttp.Serve(..)
+//	<-ch
+//	fmt.Println("Ready to serve!")
 //
-//   <-ch
-//   cleanup()
+//	<-ch
+//	cleanup()
 //
 // The stop channel can be used to tell the server to shut down gracefully; this
 // is especially useful for tests:
 //
-//   stop := make(chan struct{})
-//   go zhttp.Serve(0, stop, [..])
-//   <-ch // Ready to serve
+//	stop := make(chan struct{})
+//	go zhttp.Serve(0, stop, [..])
+//	<-ch // Ready to serve
 //
-//   time.Sleep(1 * time.Second)
-//   stop <- struct{}{}
+//	time.Sleep(1 * time.Second)
+//	stop <- struct{}{}
 func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}), error) {
 	argv0, err := exec.LookPath(os.Args[0])
 	if err != nil {
@@ -117,7 +117,7 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 	if err != nil {
 		if errors.Is(err, os.ErrPermission) {
 			fmt.Fprintf(os.Stderr, "\nPermission denied to bind to port %s; on Linux, try:\n", port)
-			fmt.Fprintf(os.Stderr, "    sudo setcap 'cap_net_bind_service=+ep' %s\n", argv0)
+			fmt.Fprintf(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0)+"\n")
 		}
 		return nil, fmt.Errorf("zhttp.Serve: %w", err)
 	}
@@ -170,7 +170,8 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 					fmt.Fprintf(os.Stderr,
 						"\x1b[1mWARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\x1b[0m\n",
 						port)
-					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try: sudo setcap 'cap_net_bind_service=+ep' %s\n", argv0)
+					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try:\n")
+					fmt.Fprintf(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0)+"\n")
 				}
 			}
 		}()
@@ -178,6 +179,19 @@ func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}
 
 	ch <- struct{}{} // Ready to accept connections.
 	return ch, nil
+}
+
+func suCmd(cmd string) string {
+	if _, err := exec.LookPath("doas"); err == nil {
+		return "doas " + cmd
+	} else if _, err := exec.LookPath("sudo"); err == nil {
+		return "sudo " + cmd
+	} else {
+		if strings.Contains(cmd, " ") {
+			return `su -c "` + cmd + `"`
+		}
+		return `su -c ` + cmd
+	}
 }
 
 // LogWrap returns a log.Logger which ignores any lines starting with prefixes.
