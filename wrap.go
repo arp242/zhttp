@@ -163,7 +163,8 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 		err := ztpl.Execute(w, "error.gohtml", struct {
 			Code  int
 			Error error
-		}{code, userErr})
+			Path  string
+		}{code, userErr, r.URL.Path})
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
 		}
