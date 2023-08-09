@@ -22,12 +22,13 @@ func RealIP(never ...string) func(http.Handler) http.Handler {
 }
 
 func realIP(r *http.Request) string {
-	cfip := r.Header.Get("Cf-Connecting-Ip")
+
+	cfip := r.Header.Get("CF-Connecting-IP")
 	if cfip != "" && !znet.PrivateIPString(cfip) {
 		return cfip
 	}
 
-	xrip := r.Header.Get("X-Real-Ip")
+	xrip := r.Header.Get("X-Real-IP")
 	if xrip != "" && !znet.PrivateIPString(xrip) {
 		return xrip
 	}
@@ -35,7 +36,7 @@ func realIP(r *http.Request) string {
 	xff := r.Header.Get("X-Forwarded-For")
 	if xff != "" {
 		xffSplit := strings.Split(xff, ",")
-		for i := len(xffSplit) - 1; i >= 0; i-- {
+		for i := 0; i < len(xffSplit); i++ {
 			if !znet.PrivateIPString(xffSplit[i]) {
 				return strings.TrimSpace(xffSplit[i])
 			}
