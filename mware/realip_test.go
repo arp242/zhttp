@@ -24,10 +24,15 @@ func TestRealIP(t *testing.T) {
 		{"1.1.1.1:42", http.Header{"X-Real-Ip": {"101.100.100.100"}}, "101.100.100.100"},
 		{"4006:beef::0", http.Header{"X-Real-Ip": {"4006:dead::0"}}, "4006:dead::0"},
 
+		// Fly-Client-Ip
+		{"1.1.1.1", http.Header{"Fly-Client-Ip": {"101.100.100.100"}}, "101.100.100.100"},
+		{"1.1.1.1:42", http.Header{"Fly-Client-Ip": {"101.100.100.100"}}, "101.100.100.100"},
+		{"4006:beef::0", http.Header{"Fly-Client-Ip": {"4006:dead::0"}}, "4006:dead::0"},
+
 		// X-Forwarded-For
 		{"1.1.1.1", http.Header{"X-Forwarded-For": {"101.100.100.100"}}, "101.100.100.100"},
 		{"4006:beef::0", http.Header{"X-Forwarded-For": {"4006:dead::0"}}, "4006:dead::0"},
-		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2", "101.100.100.100"}}, "2.2.2.2"},
+		{"1.1.1.1", http.Header{"X-Forwarded-For": {"2.2.2.2, 101.100.100.100"}}, "101.100.100.100"},
 
 		// Filter local
 		{"1.1.1.1", http.Header{"X-Real-Ip": {"192.168.5.5"}}, "1.1.1.1"},
