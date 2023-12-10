@@ -7,8 +7,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"zgo.at/zlog"
 )
 
 // Level constants.
@@ -57,7 +55,25 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 
 	b, err := base64.StdEncoding.DecodeString(c.Value[1:])
 	if err != nil {
-		zlog.FieldsRequest(r).Error(err)
+		// Simply ignore the error; this is always someone trying to inject
+		// values:
+		//
+		//   flash=iTmVlZCB0byBsb2cgaW4='and(select'1'from/**/cast(md5(1229511929)as/**/int))>'0
+		//
+		// Actually a second case is the Iframely bot; they seem to send some
+		// binary value(?) For example:
+		//
+		//   flash=iTmVlZCB0byBsb2cgaW4%3D
+		//
+		// This is always the same value, accross multiple hosts... Not entirely
+		// sure what's up with that, but doesn't look like anything we can fix,
+		// so 🤷
+		//
+		// TODO: make a generic "ignore things" feature, or something; we
+		// already have LogUnknownFields, and sometimes you might want to log
+		// this too. Should switch to slog first though.
+		//zlog.FieldsRequest(r).Error(err)
+		return nil
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name: cookieFlash, Value: "", Path: "/",

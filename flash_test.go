@@ -31,3 +31,14 @@ func TestFlashMulti(t *testing.T) {
 	FlashError(rr, "second")
 	_ = r
 }
+
+func TestFlashInvalidBase64(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("Cookie", "flash=not-valid-base64")
+	rr := httptest.NewRecorder()
+
+	out := ReadFlash(rr, r)
+	if out != nil {
+		t.Fatal("out is not nil")
+	}
+}
