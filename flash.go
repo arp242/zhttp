@@ -25,13 +25,13 @@ var (
 
 // Flash sets a new flash message at the LevelInfo, overwriting any previous
 // messages (if any).
-func Flash(w http.ResponseWriter, msg string, v ...interface{}) {
+func Flash(w http.ResponseWriter, msg string, v ...any) {
 	flash(w, LevelInfo, msg, v...)
 }
 
 // FlashError sets a new flash message at the LevelError, overwriting any
 // previous messages (if any).
-func FlashError(w http.ResponseWriter, msg string, v ...interface{}) {
+func FlashError(w http.ResponseWriter, msg string, v ...any) {
 	flash(w, LevelError, msg, v...)
 }
 
@@ -82,7 +82,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 	return &FlashMessage{string(c.Value[0]), string(b)}
 }
 
-func flash(w http.ResponseWriter, lvl, msg string, v ...interface{}) {
+func flash(w http.ResponseWriter, lvl, msg string, v ...any) {
 	if f := ReadFlash(w, &http.Request{}); f != nil {
 		fmt.Fprintf(os.Stderr, "double flash message while setting %q:\n\talready set: %q\n",
 			msg, f.Message)

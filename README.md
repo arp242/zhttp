@@ -29,14 +29,14 @@ need to).
 Return helpers (with the `http.ResponseWriter` elided in the function
 signature):
 
-    Stream(fp io.Reader)                     Stream any data.
-    Bytes(b []byte)                          Send []byte
-    String(s string)                         Send string
-    Text(s string)                           Send string with Content-Type text/plain
-    JSON(i interface{})                      Send JSON
-    Template(name string, data interface{})  Render a template (see below)
-    MovedPermanently(url string)             301 Moved Permanently
-    SeeOther(url string)                     303 See Other
+    Stream(fp io.Reader)             Stream any data.
+    Bytes(b []byte)                  Send []byte
+    String(s string)                 Send string
+    Text(s string)                   Send string with Content-Type text/plain
+    JSON(i any)                      Send JSON
+    Template(name string, data any)  Render a template (see below)
+    MovedPermanently(url string)     301 Moved Permanently
+    SeeOther(url string)             303 See Other
 
 ---
 

@@ -53,7 +53,7 @@ var formamOpts = &formam.DecoderOptions{
 //
 // Returns one of the Content* constants, which is useful if you want to
 // alternate the responses.
-func Decode(r *http.Request, dst interface{}) (uint8, error) {
+func Decode(r *http.Request, dst any) (uint8, error) {
 	ct := r.Header.Get("Content-Type")
 	if i := strings.Index(ct, ";"); i >= 0 {
 		ct = ct[:i]
