@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -13,23 +14,46 @@ import (
 	"zgo.at/zlog"
 )
 
+type (
+	ContentType uint8
+)
+
+func (c ContentType) String() string {
+	switch c {
+	default:
+		return "Content-Type unsupported"
+	case ContentQuery:
+		return "Content-Type URL query"
+	case ContentForm:
+		return "Content-Type form"
+	case ContentJSON:
+		return "Content-Type JSON"
+	}
+}
+
 const (
-	ContentUnsupported uint8 = iota
+	ContentUnsupported ContentType = iota
 	ContentQuery
 	ContentForm
 	ContentJSON
 )
 
-// LogUnknownFields tells Decode() to issue an error log on unknown fields.
-var LogUnknownFields bool
+type (
+	ErrorDecode struct {
+		ct  ContentType
+		err error
+	}
+	ErrorDecodeUnknown struct {
+		Field string
+	}
+)
 
-type DecodeError struct {
-	ct  uint8
-	err error
+func (e ErrorDecodeUnknown) Error() string {
+	return fmt.Sprintf("unknown parameter: %q", e.Field)
 }
 
-func (e DecodeError) Unwrap() error { return e.err }
-func (e DecodeError) Error() string {
+func (e ErrorDecode) Unwrap() error { return e.err }
+func (e ErrorDecode) Error() string {
 	var s string
 	switch e.ct {
 	case ContentQuery:
@@ -49,11 +73,24 @@ var formamOpts = &formam.DecoderOptions{
 	TimeFormats: []string{"2006-01-02", time.RFC3339},
 }
 
+type Decoder struct {
+	logUnknown bool
+	retUnknown bool
+}
+
+// NewDecoder creates a new decoder.
+//
+// The default is to ignore unknown fields; if log is true an error log will be
+// issued; if retErr is true they will be returned as a [ErrorDecodeUnknown].
+func NewDecoder(log, retErr bool) Decoder {
+	return Decoder{logUnknown: log, retUnknown: retErr}
+}
+
 // Decode request parameters from a form, JSON body, or query parameters.
 //
 // Returns one of the Content* constants, which is useful if you want to
 // alternate the responses.
-func Decode(r *http.Request, dst any) (uint8, error) {
+func (dec Decoder) Decode(r *http.Request, dst any) (ContentType, error) {
 	ct := r.Header.Get("Content-Type")
 	if i := strings.Index(ct, ";"); i >= 0 {
 		ct = ct[:i]
@@ -61,15 +98,25 @@ func Decode(r *http.Request, dst any) (uint8, error) {
 
 	var (
 		err error
-		c   uint8
+		c   ContentType
 	)
 	switch {
 	case r.Method == http.MethodGet:
 		c = ContentQuery
 		err = formam.NewDecoder(formamOpts).Decode(r.URL.Query(), dst)
 	case ct == "application/json":
+		// TODO: UnknownFieldsLog isn't supported.
+		d := json.NewDecoder(r.Body)
+		if dec.retUnknown {
+			d.DisallowUnknownFields()
+		}
+
 		c = ContentJSON
-		err = json.NewDecoder(r.Body).Decode(dst)
+		err = d.Decode(dst)
+		if err != nil && strings.HasPrefix(err.Error(), `json: unknown field "`) {
+			_, field, _ := strings.Cut(err.Error(), `"`)
+			return c, &ErrorDecodeUnknown{strings.Trim(field, `"`)}
+		}
 	case ct == "application/x-www-form-urlencoded":
 		c = ContentForm
 		err = r.ParseForm()
@@ -87,15 +134,26 @@ func Decode(r *http.Request, dst any) (uint8, error) {
 		err = guru.Errorf(http.StatusUnsupportedMediaType,
 			"unable to handle Content-Type %q", ct)
 	}
+
 	var fErr *formam.Error
 	if errors.As(err, &fErr) && fErr.Code() == formam.ErrCodeUnknownField {
-		if LogUnknownFields {
+		if dec.logUnknown {
 			zlog.FieldsRequest(r).Error(err)
+		}
+		if dec.retUnknown {
+			return c, &ErrorDecodeUnknown{Field: fErr.Path()}
 		}
 		err = nil
 	}
 	if err != nil && err != io.EOF {
-		return 0, &DecodeError{c, err}
+		return c, &ErrorDecode{c, err}
 	}
 	return c, nil
+}
+
+var DefaultDecoder = NewDecoder(false, false)
+
+// Decode the request with [DefefaultDecoder].
+func Decode(r *http.Request, dst any) (ContentType, error) {
+	return DefaultDecoder.Decode(r, dst)
 }

@@ -32,7 +32,8 @@ func UserError(err error) (int, error) {
 			Code() int
 			Error() string
 		}
-		dErr *DecodeError
+		dErr *ErrorDecode
+		uErr *ErrorDecodeUnknown
 		code = 500
 	)
 	switch {
@@ -40,6 +41,8 @@ func UserError(err error) (int, error) {
 		code = stErr.Code()
 		err = stErr
 	case errors.As(err, &dErr): // Invalid parameters.
+		code = 400
+	case errors.As(err, &uErr): // Invalid parameters.
 		code = 400
 	case errors.Is(err, sql.ErrNoRows):
 		code = 404
