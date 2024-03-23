@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"zgo.at/zhttp"
 	"zgo.at/zlog"
 )
 
@@ -14,9 +15,9 @@ import (
 // be overriden by setting a "debug-delay" cookie, which is in seconds.
 //
 // This is intended for debugging frontend timing issues.
-func Delay(d time.Duration) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Delay(d time.Duration) zhttp.Middleware {
+	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
+		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 			delay := d
 			c, _ := r.Cookie("debug-delay")
 			if c != nil {
@@ -28,7 +29,7 @@ func Delay(d time.Duration) func(http.Handler) http.Handler {
 				zlog.Module("debug-delay").Printf("%s delay", delay)
 				time.Sleep(delay)
 			}
-			next.ServeHTTP(w, r)
+			return next(w, r)
 		})
 	}
 }

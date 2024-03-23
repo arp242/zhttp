@@ -7,13 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"zgo.at/zhttp"
 	"zgo.at/zstd/ztest"
 )
 
 type handle struct{}
 
-func (h handle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h handle) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
 	_, _ = w.Write([]byte("handler"))
+	return nil
 }
 
 var kf = func(*http.Request) string { return "test" }
@@ -24,7 +26,7 @@ func TestRatelimit(t *testing.T) {
 		Limit:   func(*http.Request) (int, int64) { return 2, 2 },
 		Client:  kf,
 		Message: "oh noes",
-	})(handle{})
+	})(handle{}.ServeHTTP)
 
 	var (
 		n    = 2
@@ -37,7 +39,7 @@ func TestRatelimit(t *testing.T) {
 			func(i int) {
 				go func() { // goroutine to detect/test race.
 					defer wg.Done()
-					rr := ztest.HTTP(t, nil, handler)
+					rr := ztest.HTTP(t, nil, zhttp.Wrap(handler))
 					lock.Lock()
 					defer lock.Unlock()
 					ztest.Code(t, rr, 200)
@@ -50,14 +52,14 @@ func TestRatelimit(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		send(n)
 
-		rr := ztest.HTTP(t, nil, handler)
+		rr := ztest.HTTP(t, nil, zhttp.Wrap(handler))
 		ztest.Code(t, rr, 429)
 		if rr.Body.String() != "oh noes" {
 			t.Errorf("wrong body: %q", rr.Body.String())
 		}
 
 		time.Sleep(1 * time.Second) // Rate limit is 2 seconds
-		rr = ztest.HTTP(t, nil, handler)
+		rr = ztest.HTTP(t, nil, zhttp.Wrap(handler))
 		ztest.Code(t, rr, 429)
 		if rr.Body.String() != "oh noes" {
 			t.Errorf("wrong body: %q", rr.Body.String())
@@ -72,7 +74,7 @@ func BenchmarkRatelimit(b *testing.B) {
 		Store:  NewRatelimitMemory(),
 		Limit:  func(*http.Request) (int, int64) { return 60, 20 },
 		Client: kf,
-	})(handle{})
+	})(handle{}.ServeHTTP)
 
 	rr := httptest.NewRecorder()
 	r, err := http.NewRequest("GET", "", nil)

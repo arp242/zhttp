@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"zgo.at/zhttp"
 	"zgo.at/zstd/znet"
 )
 
@@ -17,11 +18,11 @@ import (
 // TODO: allow configuring which headers to look at, as this is very much
 // dependent on the specific configuration; preferring e.g. Fly-Client-Ip means
 // its trivial to spoof the "real IP".
-func RealIP(never ...string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func RealIP(never ...string) zhttp.Middleware {
+	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
+		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 			r.RemoteAddr = realIP(r)
-			next.ServeHTTP(w, r)
+			return next(w, r)
 		})
 	}
 }

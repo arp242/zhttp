@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"testing"
 
+	"zgo.at/zhttp"
 	"zgo.at/zstd/ztest"
 )
 
 func TestNoCache(t *testing.T) {
-	rr := ztest.HTTP(t, nil, NoCache()(handle{}))
+	rr := ztest.HTTP(t, nil, zhttp.Wrap(NoCache()(handle{}.ServeHTTP)))
 	if rr.Code != http.StatusOK {
 		t.Errorf("want code 200, got %v", rr.Code)
 	}
@@ -21,7 +22,7 @@ func TestNoCache(t *testing.T) {
 }
 
 func TestNoStore(t *testing.T) {
-	rr := ztest.HTTP(t, nil, NoStore()(handle{}))
+	rr := ztest.HTTP(t, nil, zhttp.Wrap(NoStore()(handle{}.ServeHTTP)))
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("want code 200, got %v", rr.Code)

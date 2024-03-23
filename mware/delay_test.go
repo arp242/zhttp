@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"zgo.at/zhttp"
 )
 
 func TestDelay(t *testing.T) {
@@ -22,8 +24,9 @@ func TestDelay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			handler := Delay(tt.delay)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := Delay(tt.delay)(zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 				w.Write([]byte("Hello World"))
+				return nil
 			}))
 
 			r, _ := http.NewRequest("GET", "/", nil)

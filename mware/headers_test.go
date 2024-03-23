@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"zgo.at/zhttp"
 	"zgo.at/zstd/ztest"
 )
 
@@ -37,7 +38,9 @@ func TestHeaders(t *testing.T) {
 			rr := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/", nil)
 
-			Headers(tt.in)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).ServeHTTP(rr, r)
+			Headers(tt.in)(zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+				return nil
+			})).ServeHTTP(rr, r)
 
 			buf := &strings.Builder{}
 			err := rr.Header().WriteSubset(buf, nil)

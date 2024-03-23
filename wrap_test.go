@@ -1,94 +1,57 @@
-package zhttp
+package zhttp_test
 
 import (
-	"errors"
+	"fmt"
+	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"zgo.at/guru"
-	"zgo.at/zlog"
-	"zgo.at/ztpl"
+	"zgo.at/zhttp"
+	"zgo.at/zhttp/mware"
 )
 
-type jsonErr struct{}
+type (
+	handler1 struct{}
+	handler2 struct{}
+)
 
-func (err jsonErr) Error() string                { return "JSON error" }
-func (err jsonErr) MarshalJSON() ([]byte, error) { return []byte("[1]"), nil }
+func (handler1) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
+	return zhttp.String(w, "one")
+}
+func (handler2) ServeHTTP(w http.ResponseWriter, r *http.Request) error {
+	return zhttp.String(w, "two")
+}
 
-type errJSON struct{}
+func TestServeMux(t *testing.T) {
+	m := zhttp.NewServeMux()
+	m.Handle("/one", handler1{})
+	m.Handle("/two", handler2{},
+		mware.NoCache(), mware.NoStore(),
+		mware.Delay(0),
+		mware.Headers(http.Header{"X-Foo": []string{"bar"}}),
+		mware.Ratelimit(mware.RatelimitOptions{Limit: mware.RatelimitLimit(100, 1)}),
+		mware.RealIP(),
+		mware.RequestLog(nil),
+		mware.Unpanic(),
+		mware.WrapWriter(),
+	)
 
-func (err errJSON) Error() string              { return "JSON error 2" }
-func (err errJSON) ErrorJSON() ([]byte, error) { return []byte("[2]"), nil }
-
-func TestErrPage(t *testing.T) {
-	t.Skip() // Doesn't test all that much anymore, need to expand to also check log.
-
-	tests := []struct {
-		name     string
-		code     int
-		err      error
-		wantJSON string
-		wantHTML string
-	}{
-		{
-			"basic",
-			500,
-			errors.New("oh noes"),
-			`{"error":"oh noes"}`,
-			"<p>Error 500: oh noes</p>\n",
-		},
-		{
-			"guru",
-			505,
-			guru.New(505, "oh noes"),
-			`{"error":"oh noes"}`,
-			"<p>Error 505: oh noes</p>\n",
-		},
-		{
-			"json marshal",
-			500,
-			&jsonErr{},
-			`[1]`,
-			"<p>Error 500: JSON error</p>\n",
-		},
-		{
-			"json error",
-			500,
-			&errJSON{},
-			`[2]`,
-			"<p>Error 500: JSON error 2</p>\n",
-		},
+	{
+		rr := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/", nil)
+		m.ServeHTTP(rr, r)
+		fmt.Println(rr.Code, rr.Body.String())
 	}
-
-	ztpl.Init(os.DirFS("tpl"))
-	zlog.Config.Outputs = []zlog.OutputFunc{} // Don't care about logs; don't spam.
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Run("json", func(t *testing.T) {
-				rr := httptest.NewRecorder()
-				r := httptest.NewRequest("GET", "/", nil)
-				r.Header.Set("Content-Type", "application/json")
-
-				ErrPage(rr, r, tt.err)
-				out := rr.Body.String()
-				if out != tt.wantJSON {
-					t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.wantJSON)
-				}
-			})
-
-			t.Run("html", func(t *testing.T) {
-				rr := httptest.NewRecorder()
-				r := httptest.NewRequest("GET", "/", nil)
-				r.Header.Set("Content-Type", "text/html")
-
-				ErrPage(rr, r, tt.err)
-				out := rr.Body.String()
-				if out != tt.wantHTML {
-					t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.wantHTML)
-				}
-			})
-		})
+	{
+		rr := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/one", nil)
+		m.ServeHTTP(rr, r)
+		fmt.Println(rr.Code, rr.Body.String())
+	}
+	{
+		rr := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/two", nil)
+		m.ServeHTTP(rr, r)
+		fmt.Println(rr.Code, rr.Body.String())
 	}
 }
