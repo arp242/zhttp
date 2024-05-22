@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"zgo.at/zhttp"
 	"zgo.at/zhttp/ctxkey"
 	"zgo.at/zstd/znet"
-	"zgo.at/zstd/zstring"
 )
 
 var (
@@ -89,7 +89,7 @@ func Add(load loadFunc, noCSRF ...string) func(http.Handler) http.Handler {
 			}
 
 			// Check CSRF.
-			if !zstring.Contains(noCSRF, r.URL.Path) {
+			if !slices.Contains(noCSRF, r.URL.Path) {
 				switch r.Method {
 				case http.MethodDelete, http.MethodPatch, http.MethodPost, http.MethodPut:
 					var err error
