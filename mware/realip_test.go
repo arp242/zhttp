@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"zgo.at/zhttp"
 )
 
 func TestRealIP(t *testing.T) {
@@ -52,10 +50,9 @@ func TestRealIP(t *testing.T) {
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
 			realIP := ""
-			handler := RealIP()(zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+			handler := RealIP()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				realIP = r.RemoteAddr
 				w.Write([]byte("Hello World"))
-				return nil
 			}))
 
 			r, _ := http.NewRequest("GET", "/", nil)

@@ -21,7 +21,7 @@ type RequestLogOptions struct {
 // RequestLog logs all requests to stdout.
 //
 // Any paths matching ignore will not be printed.
-func RequestLog(opt *RequestLogOptions, ignore ...string) zhttp.Middleware {
+func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) http.Handler {
 	if opt == nil {
 		opt = &RequestLogOptions{
 			Host:    true,
@@ -29,12 +29,13 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) zhttp.Middleware {
 		}
 	}
 
-	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
-		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if len(ignore) > 0 {
 				for _, i := range ignore {
 					if r.URL.Path == i {
-						return next(w, r)
+						next.ServeHTTP(w, r)
+						return
 					}
 				}
 			}
@@ -45,7 +46,7 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) zhttp.Middleware {
 			if !ok {
 				ww = zhttp.NewResponseWriter(w, r.ProtoMajor)
 			}
-			nextErr := next(ww, r)
+			next.ServeHTTP(ww, r)
 
 			// Get color-coded status code.
 			status := "%d"
@@ -76,17 +77,6 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) zhttp.Middleware {
 
 			fmt.Printf("%s %s %s %3.0fms  %s\n", time.Now().Format(opt.TimeFmt),
 				status, method, time.Since(start).Seconds()*1000, url)
-			return nextErr
-		})
-	}
-}
-
-// WrapWriter replaces the http.ResponseWriter with our version of
-// http.ResponseWriter for some additional functionality.
-func WrapWriter() zhttp.Middleware {
-	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
-		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
-			return next(zhttp.NewResponseWriter(w, r.ProtoMajor), r)
 		})
 	}
 }

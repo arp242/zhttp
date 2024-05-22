@@ -2,8 +2,6 @@ package mware
 
 import (
 	"net/http"
-
-	"zgo.at/zhttp"
 )
 
 // DefaultHeaders will be set by default.
@@ -17,7 +15,7 @@ var DefaultHeaders = http.Header{
 //
 // DefaultHeaders will always be set. Headers passed to this function overrides
 // them. Use a nil value to remove a header.
-func Headers(h http.Header) zhttp.Middleware {
+func Headers(h http.Header) func(next http.Handler) http.Handler {
 	headers := make(http.Header)
 	for k, v := range DefaultHeaders {
 		headers[http.CanonicalHeaderKey(k)] = v
@@ -26,15 +24,15 @@ func Headers(h http.Header) zhttp.Middleware {
 		headers[http.CanonicalHeaderKey(k)] = v
 	}
 
-	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
-		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			for k, v := range headers {
 				for _, v2 := range v {
 					w.Header().Add(k, v2)
 				}
 			}
 
-			return next(w, r)
+			next.ServeHTTP(w, r)
 		})
 	}
 }

@@ -17,9 +17,8 @@ func TestUnpanic(t *testing.T) {
 	}
 	defer func() { zhttp.ErrPage = zhttp.DefaultErrPage }()
 
-	handler := Unpanic()(zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+	handler := Unpanic()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("oh noes!")
-		return nil
 	}))
 
 	r, _ := http.NewRequest("GET", "/panic", nil)

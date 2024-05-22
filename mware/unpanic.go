@@ -9,9 +9,9 @@ import (
 )
 
 // Unpanic recovers from panics in handlers and calls ErrPage().
-func Unpanic(filterStack ...string) zhttp.Middleware {
-	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
-		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+func Unpanic(filterStack ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				rec := recover()
 				if rec == nil {
@@ -28,7 +28,8 @@ func Unpanic(filterStack ...string) zhttp.Middleware {
 					"net/http", "zgo.at/zhttp", "github.com/go-chi/chi")...))
 				zhttp.ErrPage(w, r, err)
 			}()
-			return next(w, r)
+
+			next.ServeHTTP(w, r)
 		})
 	}
 }

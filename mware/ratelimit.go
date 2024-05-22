@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"zgo.at/zhttp"
 	"zgo.at/zlog"
 )
 
@@ -22,12 +21,12 @@ type RatelimitStore interface {
 }
 
 // Ratelimit requests.
-func Ratelimit(opts RatelimitOptions) zhttp.Middleware {
+func Ratelimit(opts RatelimitOptions) func(http.Handler) http.Handler {
+	if opts.Client == nil {
+		panic("opts.Client is nil")
+	}
 	if opts.Limit == nil {
 		panic("opts.Limit is nil")
-	}
-	if opts.Client == nil {
-		opts.Client = RatelimitIP
 	}
 	if opts.Store == nil {
 		opts.Store = NewRatelimitMemory()
@@ -40,8 +39,8 @@ func Ratelimit(opts RatelimitOptions) zhttp.Middleware {
 
 	l := zlog.Module("ratelimit")
 
-	return func(next zhttp.HandlerFunc) zhttp.HandlerFunc {
-		return zhttp.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			limit, period := opts.Limit(r)
 			granted, remaining := opts.Store.Grant(opts.Client(r), limit, period)
 			w.Header().Add("X-Rate-Limit-Limit", strconv.Itoa(limit))
@@ -57,9 +56,9 @@ func Ratelimit(opts RatelimitOptions) zhttp.Middleware {
 				}).Debug("rate limited")
 				w.WriteHeader(http.StatusTooManyRequests)
 				w.Write(msg)
-				return nil
+				return
 			}
-			return next(w, r)
+			next.ServeHTTP(w, r)
 		})
 	}
 }
