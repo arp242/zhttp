@@ -69,6 +69,9 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := strings.TrimLeft(r.URL.Path, "/")
+	if path == "" {
+		path = "index.html"
+	}
 	d, err := fs.ReadFile(s.files, path)
 	if err != nil {
 		if os.IsNotExist(err) {
