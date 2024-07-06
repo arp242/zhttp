@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,15 +19,17 @@ type RequestLogOptions struct {
 	TimeFmt string // Time format; default is just the time.
 }
 
+var (
+	urlRepl = strings.NewReplacer("%3A", ":")
+	reURL   = regexp.MustCompile(`[\?\&][a-zA-Z0-9:%]+=`)
+)
+
 // RequestLog logs all requests to stdout.
 //
 // Any paths matching ignore will not be printed.
 func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) http.Handler {
 	if opt == nil {
-		opt = &RequestLogOptions{
-			Host:    true,
-			TimeFmt: "15:04:05 ",
-		}
+		opt = &RequestLogOptions{TimeFmt: "15:04:05 "}
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -48,6 +51,13 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) htt
 			}
 			next.ServeHTTP(ww, r)
 
+			url := r.URL.RequestURI()
+			if opt.Host {
+				url = r.Host + url
+			}
+			// Encode a bit less aggresively.
+			url = urlRepl.Replace(url)
+
 			// Get color-coded status code.
 			status := "%d"
 			if enableColors {
@@ -61,7 +71,12 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) htt
 				case ww.Status() >= 500 && ww.Status() <= 599:
 					status = "\x1b[1m\x1b[48;5;9m\x1b[38;5;15m%d\x1b[0m"
 				}
+
+				url = reURL.ReplaceAllStringFunc(url, func(s string) string {
+					return " " + s[:1] + " \x1b[1m" + s[1:len(s)-1] + "=\x1b[0m"
+				})
 			}
+
 			status = fmt.Sprintf(status, ww.Status())
 
 			// Aligned method
@@ -70,13 +85,12 @@ func RequestLog(opt *RequestLogOptions, ignore ...string) func(http.Handler) htt
 				method = method + strings.Repeat(" ", 5-len(method))
 			}
 
-			url := r.URL.RequestURI()
-			if opt.Host {
-				url = r.Host + url
+			t := ""
+			if opt.TimeFmt != "" {
+				t = time.Now().Format(opt.TimeFmt) + " "
 			}
 
-			fmt.Printf("%s %s %s %3.0fms  %s\n", time.Now().Format(opt.TimeFmt),
-				status, method, time.Since(start).Seconds()*1000, url)
+			fmt.Printf("%s%s %s %3.0fms  %s\n", t, status, method, time.Since(start).Seconds()*1000, url)
 		})
 	}
 }
