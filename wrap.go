@@ -212,6 +212,12 @@ func Stream(w http.ResponseWriter, fp io.Reader) error {
 	return err
 }
 
+// NoContent writes the NoContent status code (204).
+func NoContent(w http.ResponseWriter) error {
+	writeStatus(w, http.StatusNoContent, "")
+	return nil
+}
+
 // Bytes sends the bytes as-is to the client.
 func Bytes(w http.ResponseWriter, b []byte) error {
 	writeStatus(w, 200, "")
