@@ -21,7 +21,7 @@ type RequestLogOptions struct {
 
 var (
 	urlRepl = strings.NewReplacer("%3A", ":")
-	reURL   = regexp.MustCompile(`[\?\&][a-zA-Z0-9:%]+=`)
+	reURL   = regexp.MustCompile(`[\?\&][a-zA-Z0-9:%_]+=`)
 )
 
 // RequestLog logs all requests to stdout.
