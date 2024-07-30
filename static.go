@@ -87,7 +87,9 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ct = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", ct)
-	w.Header().Set("Access-Control-Allow-Origin", s.domain)
+	if s.domain != "" {
+		w.Header().Set("Access-Control-Allow-Origin", s.domain)
+	}
 	if s.cacheControl != nil {
 		cache := -100
 		c, ok := s.cacheControl[r.URL.Path]
