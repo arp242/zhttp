@@ -17,6 +17,20 @@ import (
 	"zgo.at/ztpl"
 )
 
+// BasePath is the base path under which this application runs.
+//
+// If set, it should have a leading slash but no trailing slash, that way
+// concatenation like BasePath + "/subpath" works correctly.
+var BasePath = ""
+
+// CookiePath returns the Path attribute to use for cookies.
+func CookiePath() string {
+	if BasePath == "" {
+		return "/"
+	}
+	return BasePath
+}
+
 // UserError modifies an error for user display.
 //
 //   - Removes any stack traces from zgo.at/errors or github.com/pkg/errors.
@@ -159,15 +173,16 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 		}
 
 		if !ztpl.HasTemplate("error.gohtml") {
-			fmt.Fprintf(w, "<p>Error %d: %s</p>", code, userErr)
+			fmt.Fprintf(w, "<pre>Error %d: %s</pre>", code, userErr)
 			return
 		}
 
 		err := ztpl.Execute(w, "error.gohtml", struct {
 			Code  int
 			Error error
+			Base  string
 			Path  string
-		}{code, userErr, r.URL.Path})
+		}{code, userErr, BasePath, r.URL.Path})
 		if err != nil {
 			zlog.FieldsRequest(r).Error(err)
 		}
@@ -281,6 +296,9 @@ func Template(w http.ResponseWriter, name string, data any) error {
 
 // MovedPermanently redirects to the given URL with a 301.
 func MovedPermanently(w http.ResponseWriter, url string) error {
+	if strings.HasPrefix(url, "/") {
+		url = BasePath + url
+	}
 	w.Header().Set("Location", url)
 	w.WriteHeader(301)
 	return nil
@@ -295,6 +313,9 @@ func MovedPermanently(w http.ResponseWriter, url string) error {
 // on that other resource might result in a representation that is useful to
 // recipients without implying that it represents the original target resource."
 func SeeOther(w http.ResponseWriter, url string) error {
+	if strings.HasPrefix(url, "/") {
+		url = BasePath + url
+	}
 	w.Header().Set("Location", url)
 	w.WriteHeader(303)
 	return nil

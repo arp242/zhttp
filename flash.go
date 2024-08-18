@@ -76,7 +76,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 		return nil
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name: cookieFlash, Value: "", Path: "/",
+		Name: cookieFlash, Value: "", Path: CookiePath(),
 		Expires: time.Now().Add(-24 * time.Hour),
 	})
 	return &FlashMessage{string(c.Value[0]), string(b)}
@@ -91,7 +91,7 @@ func flash(w http.ResponseWriter, lvl, msg string, v ...any) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieFlash,
 		Value:    lvl + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(msg, v...))),
-		Path:     "/",
+		Path:     CookiePath(),
 		Expires:  time.Now().Add(1 * time.Minute),
 		HttpOnly: true,
 		Secure:   CookieSecure,
