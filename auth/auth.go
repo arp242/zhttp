@@ -34,7 +34,7 @@ func SetCookie(w http.ResponseWriter, val, domain string) {
 		Domain:   znet.RemovePort(domain),
 		Name:     cookieKey,
 		Value:    val,
-		Path:     "/",
+		Path:     zhttp.CookiePath(),
 		Expires:  time.Now().Add(oneYear),
 		HttpOnly: true,
 		Secure:   zhttp.CookieSecure,
@@ -52,7 +52,7 @@ func ClearCookie(w http.ResponseWriter, domain string) {
 		Domain:  znet.RemovePort(domain),
 		Name:    cookieKey,
 		Value:   "",
-		Path:    "/",
+		Path:    zhttp.CookiePath(),
 		Expires: time.Now().Add(-24 * time.Hour),
 	})
 }
