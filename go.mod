@@ -8,6 +8,6 @@ require (
 	zgo.at/guru v1.1.0
 	zgo.at/json v0.0.0-20221020004326-fe4f75bb278e
 	zgo.at/zlog v0.0.0-20201213081304-1dc74ce06e5f
-	zgo.at/zstd v0.0.0-20240521013615-10baa641d7d0
+	zgo.at/zstd v0.0.0-20240801180155-977f077a1a7f
 	zgo.at/ztpl v0.0.0-20240522225602-574aca1079e7
 )

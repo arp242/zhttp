@@ -6,7 +6,7 @@ zgo.at/json v0.0.0-20221020004326-fe4f75bb278e h1:rEyfeeAnUDOYdH9PVHe5EZ8seo1V1U
 zgo.at/json v0.0.0-20221020004326-fe4f75bb278e/go.mod h1:yvrHxciuKpi1XgJoCIfg/EDybcgkcXvjV2tCVp8O2ks=
 zgo.at/zlog v0.0.0-20201213081304-1dc74ce06e5f h1:ySpTSREDks0yr4Hu/52uelg+KFkYLP4Hf4tOB0po27g=
 zgo.at/zlog v0.0.0-20201213081304-1dc74ce06e5f/go.mod h1:YkLAQZjLsp1RqWHn8SJokHzXyYU+6FZjM4GNY64IKME=
-zgo.at/zstd v0.0.0-20240521013615-10baa641d7d0 h1:s4v5EAzMGV4ly1t240XidEY1Cq0OuyZSZL57Kbz/Big=
-zgo.at/zstd v0.0.0-20240521013615-10baa641d7d0/go.mod h1:o/Q8+EtSahHnfkbB3t8wXE0FnoDTmJ0sBDlzezv9XeM=
+zgo.at/zstd v0.0.0-20240801180155-977f077a1a7f h1:78QC73Ks3k2sfNG63srA4CUG+Qr6Tp3xdJmGcllFGc4=
+zgo.at/zstd v0.0.0-20240801180155-977f077a1a7f/go.mod h1:o/Q8+EtSahHnfkbB3t8wXE0FnoDTmJ0sBDlzezv9XeM=
 zgo.at/ztpl v0.0.0-20240522225602-574aca1079e7 h1:opHnftGXVqUubaE2RRZ2InOoeMFRhdOH6PiTDBqqvNs=
 zgo.at/ztpl v0.0.0-20240522225602-574aca1079e7/go.mod h1:p1QiGvNPY5YJ3DAXzZtgAga+SG+19Ycr+TLzvGo2xZo=
