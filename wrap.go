@@ -233,6 +233,12 @@ func NoContent(w http.ResponseWriter) error {
 	return nil
 }
 
+// Accepted writes the Accepted status code (202).
+func Accepted(w http.ResponseWriter) error {
+	writeStatus(w, http.StatusAccepted, "")
+	return nil
+}
+
 // Bytes sends the bytes as-is to the client.
 func Bytes(w http.ResponseWriter, b []byte) error {
 	writeStatus(w, 200, "")
