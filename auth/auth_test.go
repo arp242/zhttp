@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"zgo.at/zhttp"
 	"zgo.at/zstd/ztest"
 )
 
@@ -29,7 +30,7 @@ func TestCSRF(t *testing.T) {
 		form := url.Values{}
 		r, err := http.NewRequest("POST", "", strings.NewReader(form.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		r.AddCookie(&http.Cookie{Name: cookieKey, Value: "x"})
+		r.AddCookie(&http.Cookie{Name: zhttp.CookieAuthName, Value: "x"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -44,7 +45,7 @@ func TestCSRF(t *testing.T) {
 		form := url.Values{"csrf": []string{"wrong"}}
 		r, err := http.NewRequest("POST", "", strings.NewReader(form.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		r.AddCookie(&http.Cookie{Name: cookieKey, Value: "x"})
+		r.AddCookie(&http.Cookie{Name: zhttp.CookieAuthName, Value: "x"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +60,7 @@ func TestCSRF(t *testing.T) {
 		form := url.Values{"csrf": []string{"correct"}}
 		r, err := http.NewRequest("POST", "", strings.NewReader(form.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		r.AddCookie(&http.Cookie{Name: cookieKey, Value: "x"})
+		r.AddCookie(&http.Cookie{Name: zhttp.CookieAuthName, Value: "x"})
 		if err != nil {
 			t.Fatal(err)
 		}

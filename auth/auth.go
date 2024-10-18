@@ -17,11 +17,6 @@ import (
 	"zgo.at/zstd/znet"
 )
 
-var (
-	cookieKey = "key"
-	oneYear   = 24 * 365 * time.Hour
-)
-
 type loadFunc func(ctx context.Context, token string) (User, error)
 
 type User interface {
@@ -32,10 +27,10 @@ type User interface {
 func SetCookie(w http.ResponseWriter, val, domain string) {
 	http.SetCookie(w, &http.Cookie{
 		Domain:   znet.RemovePort(domain),
-		Name:     cookieKey,
+		Name:     zhttp.CookieAuthName,
 		Value:    val,
 		Path:     zhttp.CookiePath(),
-		Expires:  time.Now().Add(oneYear),
+		Expires:  time.Now().Add(zhttp.CookieAuthExpire),
 		HttpOnly: true,
 		Secure:   zhttp.CookieSecure,
 		SameSite: zhttp.CookieSameSite,
@@ -50,7 +45,7 @@ func SetCookie(w http.ResponseWriter, val, domain string) {
 func ClearCookie(w http.ResponseWriter, domain string) {
 	http.SetCookie(w, &http.Cookie{
 		Domain:  znet.RemovePort(domain),
-		Name:    cookieKey,
+		Name:    zhttp.CookieAuthName,
 		Value:   "",
 		Path:    zhttp.CookiePath(),
 		Expires: time.Now().Add(-24 * time.Hour),
@@ -68,7 +63,7 @@ func ClearCookie(w http.ResponseWriter, domain string) {
 func Add(load loadFunc, noCSRF ...string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c, err := r.Cookie(cookieKey)
+			c, err := r.Cookie(zhttp.CookieAuthName)
 			if err != nil { // No cookie, no problem!
 				// Ensure there's a concrete type (rather than nil) as that makes templating easier.
 				u, _ := load(r.Context(), "")

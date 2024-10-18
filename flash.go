@@ -23,6 +23,12 @@ var (
 	CookieSameSite = http.SameSiteLaxMode
 )
 
+// Flags for auth cookie.
+var (
+	CookieAuthName   = "key"
+	CookieAuthExpire = 24 * 365 * time.Hour
+)
+
 // Flash sets a new flash message at the LevelInfo, overwriting any previous
 // messages (if any).
 func Flash(w http.ResponseWriter, msg string, v ...any) {
