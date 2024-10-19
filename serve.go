@@ -65,7 +65,7 @@ var signalStop os.Signal = st{}
 //
 //	time.Sleep(1 * time.Second)
 //	stop <- struct{}{}
-func Serve(flags uint8, stop chan struct{}, server *http.Server) (chan (struct{}), error) {
+func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct{}), error) {
 	argv0, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		argv0 = os.Args[0]
