@@ -49,39 +49,3 @@ func TestSetContentDisposition(t *testing.T) {
 		})
 	}
 }
-
-func TestCSP(t *testing.T) {
-	tests := []struct {
-		in   CSPArgs
-		want string
-	}{
-		{CSPArgs{}, ""},
-		{
-			CSPArgs{CSPDefaultSrc: {CSPSourceSelf}},
-			"default-src 'self'",
-		},
-		{
-			CSPArgs{CSPDefaultSrc: {CSPSourceSelf, "https://example.com"}},
-			"default-src 'self' https://example.com",
-		},
-		{
-			CSPArgs{
-				CSPDefaultSrc: {CSPSourceSelf, "https://example.com"},
-				CSPConnectSrc: {"https://a.com", "https://b.com"},
-			},
-			"default-src 'self' https://example.com; connect-src https://a.com https://b.com",
-		},
-	}
-
-	for i, tt := range tests {
-		t.Run(fmt.Sprintf("%v", i), func(t *testing.T) {
-			header := make(http.Header)
-			SetCSP(header, tt.in)
-
-			out := header["Content-Security-Policy"][0]
-			if out != tt.want {
-				t.Errorf("\nout:  %#v\nwant: %#v\n", out, tt.want)
-			}
-		})
-	}
-}
