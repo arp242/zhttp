@@ -203,7 +203,7 @@ func writeStatus(w http.ResponseWriter, code int, ct string) {
 		if ct != "" && w.Header().Get("Content-Type") == "" {
 			w.Header().Set("Content-Type", ct)
 		}
-		w.WriteHeader(200)
+		w.WriteHeader(code)
 	}
 }
 
