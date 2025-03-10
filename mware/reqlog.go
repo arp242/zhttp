@@ -19,7 +19,7 @@ type (
 		Host    bool   // Print Host: as well
 		TimeFmt string // Time format; default is just the time.
 	}
-	RequestLogPrinter func(method, url string, status int, start time.Time, opt *RequestLogOptions)
+	RequestLogPrinter func(r *http.Request, url string, status int, start time.Time, opt *RequestLogOptions)
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 	reURL   = regexp.MustCompile(`[\?\&][a-zA-Z0-9:%_.]+=`)
 )
 
-func printReqlog(method, url string, status int, start time.Time, opt *RequestLogOptions) {
+func printReqlog(r *http.Request, url string, status int, start time.Time, opt *RequestLogOptions) {
 	// Get color-coded status code.
 	cstatus := "%d"
 	if enableColors {
@@ -48,6 +48,7 @@ func printReqlog(method, url string, status int, start time.Time, opt *RequestLo
 	cstatus = fmt.Sprintf(cstatus, status)
 
 	// Aligned method
+	method := r.Method
 	if len(method) < 5 {
 		method = method + strings.Repeat(" ", 5-len(method))
 	}
@@ -96,7 +97,7 @@ func RequestLog(opt *RequestLogOptions, printer RequestLogPrinter, ignore ...str
 			// Encode a bit less aggresively.
 			url = urlRepl.Replace(url)
 
-			printer(r.Method, url, ww.Status(), start, opt)
+			printer(r, url, ww.Status(), start, opt)
 		})
 	}
 }
