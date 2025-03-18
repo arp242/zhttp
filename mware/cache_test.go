@@ -7,6 +7,12 @@ import (
 	"zgo.at/zstd/ztest"
 )
 
+type handle struct{}
+
+func (h handle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("handler"))
+}
+
 func TestNoCache(t *testing.T) {
 	rr := ztest.HTTP(t, nil, NoCache()(handle{}))
 	if rr.Code != http.StatusOK {
