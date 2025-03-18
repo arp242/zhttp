@@ -3,8 +3,8 @@ package zhttp
 import (
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -66,8 +66,8 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 		//
 		//   flash=iTmVlZCB0byBsb2cgaW4='and(select'1'from/**/cast(md5(1229511929)as/**/int))>'0
 		//
-		// Actually a second case is the Iframely bot; they seem to send some
-		// binary value(?) For example:
+		// A second case is the Iframely bot; they seem to send some binary
+		// value(?) For example:
 		//
 		//   flash=iTmVlZCB0byBsb2cgaW4%3D
 		//
@@ -78,7 +78,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 		// TODO: make a generic "ignore things" feature, or something; we
 		// already have LogUnknownFields, and sometimes you might want to log
 		// this too. Should switch to slog first though.
-		//zlog.FieldsRequest(r).Error(err)
+		// slog.Error(err)
 		return nil
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -90,8 +90,7 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 
 func flash(w http.ResponseWriter, lvl, msg string, v ...any) {
 	if f := ReadFlash(w, &http.Request{}); f != nil {
-		fmt.Fprintf(os.Stderr, "double flash message while setting %q:\n\talready set: %q\n",
-			msg, f.Message)
+		slog.Debug("zhttp.flash: double flash message", "msg", msg, "f.Message", f.Message)
 	}
 
 	http.SetCookie(w, &http.Cookie{

@@ -11,7 +11,6 @@ import (
 	"github.com/monoculum/formam/v3"
 	"zgo.at/guru"
 	"zgo.at/json"
-	"zgo.at/zlog"
 )
 
 type (
@@ -138,7 +137,7 @@ func (dec Decoder) Decode(r *http.Request, dst any) (ContentType, error) {
 	var fErr *formam.Error
 	if errors.As(err, &fErr) && fErr.Code() == formam.ErrCodeUnknownField {
 		if dec.logUnknown {
-			zlog.FieldsRequest(r).Error(err)
+			withRequest(r).Error(err.Error())
 		}
 		if dec.retUnknown {
 			return c, &ErrorDecodeUnknown{Field: fErr.Path()}

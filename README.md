@@ -52,7 +52,7 @@ is useful for development. e.g. with github.com/teamwork/reload:
 ztpl.Init("tpl", pack.Templates)
 
 go func() {
-    err := reload.Do(zlog.Module("main").Debugf, reload.Dir("./tpl", ztpl.Reload))
+    err := reload.Do(fmt.Printf, reload.Dir("./tpl", ztpl.Reload))
     if err != nil {
         panic(errors.Errorf("reload.Do: %v", err))
     }

@@ -1,11 +1,11 @@
 package mware
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
-
-	"zgo.at/zlog"
 )
 
 // Delay adds a delay before every request.
@@ -25,7 +25,7 @@ func Delay(d time.Duration) func(http.Handler) http.Handler {
 			}
 
 			if delay > 0 {
-				zlog.Module("debug-delay").Printf("%s delay", delay)
+				slog.Info(fmt.Sprintf("zhttp.debug-debug: %s delay", delay))
 				time.Sleep(delay)
 			}
 			next.ServeHTTP(w, r)

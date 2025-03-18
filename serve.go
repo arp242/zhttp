@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	"zgo.at/zlog"
 	"zgo.at/zstd/zstring"
 	"zgo.at/zstd/zsync"
 )
@@ -35,8 +35,8 @@ var signalStop os.Signal = st{}
 // The ReadHeader, Read, Write, or Idle timeouts are set to 10, 60, 60, and 120
 // seconds respectively if they are 0.
 //
-// Errors from the net/http package are logged via zgo.at/zlog instead of the
-// default log package. "TLS handshake error" are silenced, since there's rarely
+// Errors from the net/http package are logged via slog instead of the default
+// log package. "TLS handshake error" are silenced, since there's rarely
 // anything that can be done with that. Define server.ErrorLog if you want the
 // old behaviour back.
 //
@@ -137,7 +137,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 
 		err := server.Shutdown(context.Background())
 		if err != nil {
-			zlog.Errorf("zhttp.Serve shutdown: %s", err)
+			slog.Error(fmt.Sprintf("zhttp.Serve shutdown: %s", err))
 		}
 		ln.Close()
 
@@ -155,7 +155,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 			err = server.Serve(ln)
 		}
 		if err != nil && err != http.ErrServerClosed {
-			zlog.Errorf("zhttp.Serve: %s", err)
+			slog.Error(fmt.Sprintf("zhttp.Serve: %s", err))
 			os.Exit(66)
 		}
 	}()
@@ -165,7 +165,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 		go func() {
 			err := http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
 			if err != nil && err != http.ErrServerClosed {
-				zlog.Errorf("zhttp.Serve: ListenAndServe redirect 80: %s", err)
+				slog.Error(fmt.Sprintf("zhttp.Serve: ListenAndServe redirect 80: %s", err))
 				if errors.Is(err, os.ErrPermission) {
 					fmt.Fprintf(os.Stderr,
 						"\x1b[1mWARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\x1b[0m\n",
@@ -214,7 +214,7 @@ func LogWrap(prefixes ...string) *log.Logger {
 				continue
 			}
 
-			zlog.Module("http").Errorf(l)
+			slog.Error(l)
 		}
 	}()
 

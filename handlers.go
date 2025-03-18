@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"zgo.at/json"
-	"zgo.at/zlog"
 )
 
 // HandlerRobots writes a simple robots.txt.
@@ -43,18 +43,17 @@ func HandlerJSErr() func(w http.ResponseWriter, r *http.Request) {
 		var args Error
 		_, err := Decode(r, &args)
 		if err != nil {
-			zlog.Error(err)
+			slog.Error(fmt.Sprintf("zhttp.HandlerJSErr: %s", err))
 			return
 		}
 
-		zlog.Fields(zlog.F{
-			"url":       args.URL,
-			"loc":       args.Loc,
-			"line":      args.Line,
-			"column":    args.Column,
-			"stack":     args.Stack,
-			"userAgent": args.UserAgent,
-		}).Errorf("JavaScript error: %s", args.Msg)
+		slog.Error(fmt.Sprintf("JavaScript error: %s", args.Msg),
+			"url", args.URL,
+			"loc", args.Loc,
+			"line", args.Line,
+			"column", args.Column,
+			"stack", args.Stack,
+			"userAgent", args.UserAgent)
 
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusNoContent)
@@ -87,18 +86,15 @@ func HandlerCSP() func(w http.ResponseWriter, r *http.Request) {
 
 		// Probably an extension or something.
 		if err == nil && !noise(csp.Report) {
-			fmt.Println(string(d))
-			zlog.Fields(zlog.F{
-				"BlockedURI":   csp.Report.BlockedURI,
-				"ColumnNumber": csp.Report.ColumnNumber,
-				"DocumentURI":  csp.Report.DocumentURI,
-				"LineNumber":   csp.Report.LineNumber,
-				"Referrer":     csp.Report.Referrer,
-				"SourceFile":   csp.Report.SourceFile,
-				"Violated":     csp.Report.Violated,
-			}).Errorf("CSP error")
+			slog.Error("CSP error",
+				"BlockedURI", csp.Report.BlockedURI,
+				"ColumnNumber", csp.Report.ColumnNumber,
+				"DocumentURI", csp.Report.DocumentURI,
+				"LineNumber", csp.Report.LineNumber,
+				"Referrer", csp.Report.Referrer,
+				"SourceFile", csp.Report.SourceFile,
+				"Violated", csp.Report.Violated)
 		}
-
 		w.WriteHeader(202)
 	}
 }

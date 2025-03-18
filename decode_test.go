@@ -1,15 +1,23 @@
 package zhttp
 
 import (
+	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"zgo.at/zlog"
 	"zgo.at/zstd/ztest"
 )
+
+type counter struct{ n int }
+
+func (c *counter) Enabled(context.Context, slog.Level) bool  { return true }
+func (c *counter) Handle(context.Context, slog.Record) error { c.n++; return nil }
+func (c *counter) WithAttrs(attrs []slog.Attr) slog.Handler  { return c }
+func (c *counter) WithGroup(name string) slog.Handler        { return c }
 
 func TestUnknownFields(t *testing.T) {
 	var s struct {
@@ -17,8 +25,8 @@ func TestUnknownFields(t *testing.T) {
 	}
 
 	runAll := func(dec func(*http.Request, any) (ContentType, error), wantLog, wantErr bool) {
-		n := 0
-		zlog.Config.Outputs = []zlog.OutputFunc{func(l zlog.Log) { n++ }}
+		n := &counter{}
+		slog.SetDefault(slog.New(n))
 
 		var errs [4]error
 		{
@@ -67,8 +75,8 @@ func TestUnknownFields(t *testing.T) {
 		}
 		// 3 and not 4 because JSON doesn't log. There is no good way to make
 		// this work.
-		if wantLog && n != 3 {
-			t.Errorf("wrong number of logs: %d", n)
+		if wantLog && n.n != 3 {
+			t.Errorf("wrong number of logs: %d", n.n)
 		}
 	}
 

@@ -2,12 +2,12 @@ package zhttp
 
 import (
 	"errors"
+	"log/slog"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"zgo.at/guru"
-	"zgo.at/zlog"
 	"zgo.at/ztpl"
 )
 
@@ -62,7 +62,7 @@ func TestErrPage(t *testing.T) {
 	}
 
 	ztpl.Init(os.DirFS("tpl"))
-	zlog.Config.Outputs = []zlog.OutputFunc{} // Don't care about logs; don't spam.
+	slog.SetDefault(slog.New(slog.DiscardHandler))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

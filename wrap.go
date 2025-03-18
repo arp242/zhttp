@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"zgo.at/json"
-	"zgo.at/zlog"
 	"zgo.at/ztpl"
 )
 
@@ -130,7 +129,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 
 	code, userErr := UserError(reported)
 	if code >= 500 {
-		zlog.Field("code", UserErrorCode(reported)).FieldsRequest(r).Error(reported)
+		withRequest(r).Error(reported.Error(), "code", UserErrorCode(reported))
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
@@ -153,7 +152,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 			j, err = json.Marshal(map[string]string{"error": userErr.Error()})
 		}
 		if err != nil {
-			zlog.FieldsRequest(r).Error(err)
+			withRequest(r).Error(err.Error())
 		}
 		w.Write(j)
 
@@ -184,7 +183,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 			Path  string
 		}{code, userErr, BasePath, r.URL.Path})
 		if err != nil {
-			zlog.FieldsRequest(r).Error(err)
+			withRequest(r).Error(err.Error())
 		}
 	}
 }
