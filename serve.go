@@ -163,7 +163,12 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 	// Set up http → https redirect.
 	if flags&ServeRedirect != 0 {
 		go func() {
-			err := http.ListenAndServe(host+":80", HandlerRedirectHTTP(port))
+			ctx := context.Background()
+			if server.BaseContext != nil {
+				ctx = server.BaseContext(nil)
+			}
+
+			err := http.ListenAndServe(host+":80", HandlerRedirectHTTP(ctx, port, server.Handler))
 			if err != nil && err != http.ErrServerClosed {
 				slog.Error(fmt.Sprintf("zhttp.Serve: ListenAndServe redirect 80: %s", err))
 				if errors.Is(err, os.ErrPermission) {

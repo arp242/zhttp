@@ -2,6 +2,7 @@ package zhttp
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -115,11 +116,16 @@ func noise(r Report) bool {
 }
 
 // HandlerRedirectHTTP redirects all HTTP requests to HTTPS.
-func HandlerRedirectHTTP(port string) http.HandlerFunc {
+func HandlerRedirectHTTP(ctx context.Context, port string, h http.Handler) http.HandlerFunc {
 	if port == "" {
 		port = "443"
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/.well-known/acme-challenge/") {
+			h.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
 		q := r.URL.Query().Encode()
 		if len(q) > 0 {
 			q = "?" + q
