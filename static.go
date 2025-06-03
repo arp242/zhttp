@@ -87,6 +87,7 @@ func (s Static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ct = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", ct)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if s.domain != "" {
 		w.Header().Set("Access-Control-Allow-Origin", s.domain)
 	}
