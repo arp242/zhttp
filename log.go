@@ -10,10 +10,10 @@ func withRequest(r *http.Request) *slog.Logger {
 		panic("fieldsRequest: *http.Request is nil")
 	}
 
-	return slog.With(
-		"http_method", r.Method,
-		"http_url", r.URL.String(),
-		"http_form", r.Form.Encode(),
-		"http_host", r.Host,
-		"http_user_agent", r.UserAgent())
+	return slog.With(slog.Group("http",
+		"method", r.Method,
+		"url", r.URL.String(),
+		"form", r.Form.Encode(),
+		"host", r.Host,
+		"user_agent", r.UserAgent()))
 }

@@ -20,12 +20,10 @@ func Unpanic(filterStack ...string) func(http.Handler) http.Handler {
 
 				err, ok := rec.(error)
 				if !ok {
-					err = fmt.Errorf("panic at %s %s%s: %+v\n\nForm: %#v\nHeaders: %#v",
-						r.Method, r.Host, r.RequestURI, rec, r.Form, r.Header)
+					err = fmt.Errorf("panic: %v", rec)
 				}
-
-				err = fmt.Errorf("%w\n%s", err, zdebug.Stack(append(filterStack,
-					"net/http", "zgo.at/zhttp", "github.com/go-chi/chi")...))
+				err = stackError{err, string(zdebug.Stack(append(filterStack,
+					"net/http", "zgo.at/zhttp", "github.com/go-chi/chi")...))}
 				zhttp.ErrPage(w, r, err)
 			}()
 
@@ -33,3 +31,12 @@ func Unpanic(filterStack ...string) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+type stackError struct {
+	err   error
+	stack string
+}
+
+func (s stackError) Unwrap() error      { return s.err }
+func (s stackError) StackTrace() string { return s.stack }
+func (s stackError) Error() string      { return s.stack + "\n" + s.err.Error() }

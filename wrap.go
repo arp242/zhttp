@@ -129,7 +129,14 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 
 	code, userErr := UserError(reported)
 	if code >= 500 {
-		withRequest(r).Error(reported.Error(), "code", UserErrorCode(reported))
+		attr := []any{"code", UserErrorCode(reported)}
+
+		sErr := new(interface{ StackTrace() string })
+		if errors.As(reported, sErr) {
+			reported = errors.Unwrap(reported)
+			attr = append(attr, "stacktrace", "\n"+(*sErr).StackTrace())
+		}
+		withRequest(r).Error(reported.Error(), attr...)
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
