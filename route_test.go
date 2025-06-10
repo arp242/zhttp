@@ -19,6 +19,9 @@ func TestHostRoute(t *testing.T) {
 			fmt.Fprintf(w, "*.example.com")
 		}),
 		"rdr.example.com": RedirectHost("example.org"),
+		"prefix.*": http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "prefix.*")
+		}),
 		"*": http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "default")
 		}),
@@ -32,6 +35,11 @@ func TestHostRoute(t *testing.T) {
 		{"test.example.com", "test.example.com"},
 		{"asdasd.example.com", "*.example.com"},
 		{"qweqweqw.qweqasdas.asdasd.example.com", "*.example.com"},
+
+		{"prefix.example.com", "*.example.com"},
+		{"prefix.somedomain.com", "prefix.*"},
+		{"prefix.other.somedomain.com", "prefix.*"},
+		{"prefixother.somedomain.com", "default"},
 
 		{"asdasdas.com", "default"},
 		{"asd.asd.zxc.xc.asdasdas.com", "default"},
@@ -47,9 +55,9 @@ func TestHostRoute(t *testing.T) {
 				t.Fatalf("wrong response code: %d; wanted 200", rr.Code)
 			}
 
-			got := rr.Body.String()
-			if got != tt.want {
-				t.Errorf("\ngot:  %q\nwant: %q", got, tt.want)
+			have := rr.Body.String()
+			if have != tt.want {
+				t.Errorf("\nhave: %q\nwant: %q", have, tt.want)
 			}
 		})
 	}
