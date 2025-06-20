@@ -140,8 +140,9 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 	}
 
 	ct := strings.ToLower(r.Header.Get("Content-Type"))
+	ctresp := strings.ToLower(w.Header().Get("Content-Type"))
 	switch {
-	case strings.HasPrefix(ct, "application/json"):
+	case strings.HasPrefix(ct, "application/json") || strings.HasPrefix(ctresp, "application/json"):
 		if !hasStatus {
 			w.WriteHeader(code)
 		}
@@ -163,13 +164,15 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 		}
 		w.Write(j)
 
-	case strings.HasPrefix(ct, "text/plain"):
+	case strings.HasPrefix(ct, "text/plain") || strings.HasPrefix(ctresp, "text/plain"):
 		if !hasStatus {
 			w.WriteHeader(code)
 		}
 		fmt.Fprintf(w, "Error %d: %s", code, userErr)
 
-	case !hasStatus && r.Referer() != "" && ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/"):
+	case !hasStatus && r.Referer() != "" &&
+		(ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/") ||
+			ctresp == "application/x-www-form-urlencoded" || strings.HasPrefix(ctresp, "multipart/")):
 		FlashError(w, userErr.Error())
 		SeeOther(w, r.Referer())
 
