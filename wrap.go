@@ -170,9 +170,9 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 		}
 		fmt.Fprintf(w, "Error %d: %s", code, userErr)
 
-	case !hasStatus && r.Referer() != "" &&
-		(ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/") ||
-			ctresp == "application/x-www-form-urlencoded" || strings.HasPrefix(ctresp, "multipart/")):
+	case (!hasStatus && r.Referer() != "" &&
+		(ct == "application/x-www-form-urlencoded" || ctresp == "application/x-www-form-urlencoded")) ||
+		(strings.HasPrefix(ct, "multipart/") || strings.HasPrefix(ctresp, "multipart/")):
 		FlashError(w, r, userErr.Error())
 		SeeOther(w, r.Referer())
 
