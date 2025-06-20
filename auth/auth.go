@@ -24,7 +24,11 @@ type User interface {
 }
 
 // SetCookie sets the authentication cookie to val for the given domain.
-func SetCookie(w http.ResponseWriter, val, domain string) {
+func SetCookie(w http.ResponseWriter, r *http.Request, val, domain string) {
+	sameSite := http.SameSiteLaxMode
+	if zhttp.CookieSameSiteHelper != nil {
+		sameSite = zhttp.CookieSameSiteHelper(r)
+	}
 	http.SetCookie(w, &http.Cookie{
 		Domain:   znet.RemovePort(domain),
 		Name:     zhttp.CookieAuthName,
@@ -32,8 +36,8 @@ func SetCookie(w http.ResponseWriter, val, domain string) {
 		Path:     zhttp.CookiePath(),
 		Expires:  time.Now().Add(zhttp.CookieAuthExpire),
 		HttpOnly: true,
-		Secure:   zhttp.CookieSecure,
-		SameSite: zhttp.CookieSameSite,
+		Secure:   zhttp.IsSecure(r),
+		SameSite: sameSite,
 	})
 }
 

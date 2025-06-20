@@ -9,7 +9,7 @@ func TestFlash(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil)
 	rr := httptest.NewRecorder()
 
-	Flash(rr, "w00t")
+	Flash(rr, r, "w00t")
 
 	out := ReadFlash(rr, r)
 	if out == nil {
@@ -27,8 +27,8 @@ func TestFlashMulti(t *testing.T) {
 	r := httptest.NewRequest("GET", "/", nil)
 	rr := httptest.NewRecorder()
 
-	Flash(rr, "first")
-	FlashError(rr, "second")
+	Flash(rr, r, "first")
+	FlashError(rr, r, "second")
 	_ = r
 }
 

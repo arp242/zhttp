@@ -16,11 +16,11 @@ const (
 
 const cookieFlash = "flash"
 
-// Flags to add to all cookies (login and flash).
-var (
-	CookieSecure   = false
-	CookieSameSite = http.SameSiteLaxMode
-)
+// CookieSameSiteHelper can be used to set the SameSite attribute on cookies
+// (auth and flash).
+//
+// The default is to use [http.SameSiteLaxMode].
+var CookieSameSiteHelper func(*http.Request) http.SameSite
 
 // Flags for auth cookie.
 var (
@@ -30,14 +30,14 @@ var (
 
 // Flash sets a new flash message at the LevelInfo, overwriting any previous
 // messages (if any).
-func Flash(w http.ResponseWriter, msg string) {
-	flash(w, LevelInfo, msg)
+func Flash(w http.ResponseWriter, r *http.Request, msg string) {
+	flash(w, r, LevelInfo, msg)
 }
 
 // FlashError sets a new flash message at the LevelError, overwriting any
 // previous messages (if any).
-func FlashError(w http.ResponseWriter, msg string) {
-	flash(w, LevelError, msg)
+func FlashError(w http.ResponseWriter, r *http.Request, msg string) {
+	flash(w, r, LevelError, msg)
 }
 
 // FlashMessage is a displayed flash message.
@@ -87,19 +87,23 @@ func ReadFlash(w http.ResponseWriter, r *http.Request) *FlashMessage {
 	return &FlashMessage{string(c.Value[0]), string(b)}
 }
 
-func flash(w http.ResponseWriter, lvl, msg string) {
+func flash(w http.ResponseWriter, r *http.Request, lvl, msg string) {
 	if f := ReadFlash(w, &http.Request{}); f != nil {
 		slog.Debug("zhttp.flash: double flash message", "msg", msg, "f.Message", f.Message)
 	}
 
+	sameSite := http.SameSiteLaxMode
+	if CookieSameSiteHelper != nil {
+		sameSite = CookieSameSiteHelper(r)
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieFlash,
 		Value:    lvl + base64.StdEncoding.EncodeToString([]byte(msg)),
 		Path:     CookiePath(),
 		Expires:  time.Now().Add(1 * time.Minute),
 		HttpOnly: true,
-		Secure:   CookieSecure,
-		SameSite: CookieSameSite,
+		Secure:   IsSecure(r),
+		SameSite: sameSite,
 	})
 }
 

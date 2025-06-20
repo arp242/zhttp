@@ -173,7 +173,7 @@ func DefaultErrPage(w http.ResponseWriter, r *http.Request, reported error) {
 	case !hasStatus && r.Referer() != "" &&
 		(ct == "application/x-www-form-urlencoded" || strings.HasPrefix(ct, "multipart/") ||
 			ctresp == "application/x-www-form-urlencoded" || strings.HasPrefix(ctresp, "multipart/")):
-		FlashError(w, userErr.Error())
+		FlashError(w, r, userErr.Error())
 		SeeOther(w, r.Referer())
 
 	default:
