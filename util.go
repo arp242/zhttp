@@ -20,8 +20,8 @@ func SafePath(s string) string {
 
 // IsSecure reports if this looks like a secure SSL/TLS connection.
 //
-// For proxied connections it depends on X-Forwarded-Proto being set. Most
-// proxies set this by default.
+// For proxied connections it depends on the Scheme or X-Forwarded-Proto haaders
+// being set. Most proxies set this by default.
 func IsSecure(r *http.Request) bool {
-	return !(r.TLS == nil || r.Header.Get("X-Forwarded-Proto") == "https")
+	return r.TLS != nil || r.Header.Get("Scheme") == "https" || r.Header.Get("X-Forwarded-Proto") == "https"
 }

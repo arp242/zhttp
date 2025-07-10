@@ -25,7 +25,7 @@ func Delay(d time.Duration) func(http.Handler) http.Handler {
 			}
 
 			if delay > 0 {
-				slog.Info(fmt.Sprintf("zhttp.debug-debug: %s delay", delay))
+				slog.Info(fmt.Sprintf("zhttp.delay: %s delay", delay))
 				time.Sleep(delay)
 			}
 			next.ServeHTTP(w, r)

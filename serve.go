@@ -77,8 +77,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 	}
 	host, port, err := net.SplitHostPort(server.Addr)
 	if err != nil {
-		host = server.Addr
-		port = "443"
+		host, port = server.Addr, "443"
 	}
 
 	// Set some sane-ish defaults.
