@@ -1,6 +1,6 @@
 module zgo.at/zhttp
 
-go 1.21
+go 1.24
 
 require (
 	// https://github.com/monoculum/formam/pull/49

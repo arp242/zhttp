@@ -116,7 +116,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 	if err != nil {
 		if errors.Is(err, os.ErrPermission) {
 			fmt.Fprintf(os.Stderr, "\nPermission denied to bind to port %s; on Linux, try:\n", port)
-			fmt.Fprintf(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0)+"\n")
+			fmt.Fprintln(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0))
 		}
 		return nil, fmt.Errorf("zhttp.Serve: %w", err)
 	}
@@ -175,7 +175,7 @@ func Serve(flags uint8, stop <-chan struct{}, server *http.Server) (chan (struct
 						"\x1b[1mWARNING: No permission to bind to port 80, not setting up port 80 → %s redirect\x1b[0m\n",
 						port)
 					fmt.Fprintf(os.Stderr, "WARNING: On Linux, try:\n")
-					fmt.Fprintf(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0)+"\n")
+					fmt.Fprintln(os.Stderr, "    "+suCmd("setcap 'cap_net_bind_service=+ep' "+argv0))
 				}
 			}
 		}()
