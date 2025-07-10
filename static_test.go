@@ -1,6 +1,7 @@
 package zhttp
 
 import (
+	"mime"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,6 +13,10 @@ import (
 )
 
 func TestStatic(t *testing.T) {
+	if err := mime.AddExtensionType(".go", "text/x-go"); err != nil {
+		t.Fatal(err)
+	}
+
 	files := os.DirFS(".")
 
 	tests := []struct {
