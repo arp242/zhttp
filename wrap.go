@@ -45,14 +45,22 @@ func UserError(err error) (int, error) {
 			Code() int
 			Error() string
 		}
+		pqErr interface {
+			SQLState() string
+			Error() string
+		}
 		dErr *ErrorDecode
 		uErr *ErrorDecodeUnknown
 		code = 500
 	)
 	switch {
 	case errors.As(err, &stErr): // zgo.at/guru with an embedded status code.
-		code = stErr.Code()
-		err = stErr
+		code, err = stErr.Code(), stErr
+	case errors.As(err, &pqErr): // PostgreSQL
+		switch pqErr.SQLState() {
+		case "22021": //  pq: invalid byte sequence for encoding "UTF8": 0xd5
+			code, err = 400, pqErr
+		}
 	case errors.As(err, &dErr): // Invalid parameters.
 		code = 400
 	case errors.As(err, &uErr): // Invalid parameters.
