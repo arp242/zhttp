@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -155,4 +158,30 @@ var DefaultDecoder = NewDecoder(false, false)
 // Decode the request with [DefefaultDecoder].
 func Decode(r *http.Request, dst any) (ContentType, error) {
 	return DefaultDecoder.Decode(r, dst)
+}
+
+// SaveUpload saves an uploaded file to a temporary path, returning the location
+// of the saved file.
+func SaveUpload(file multipart.File, head *multipart.FileHeader) (string, error) {
+	_, err := file.Seek(0, io.SeekStart)
+	if err != nil {
+		return "", err
+	}
+
+	fp, err := os.CreateTemp("", "zhttp-upload-*"+filepath.Ext(head.Filename))
+	if err != nil {
+		return "", err
+	}
+	defer fp.Close()
+
+	if _, err := io.Copy(fp, file); err != nil {
+		os.Remove(fp.Name())
+		return "", err
+	}
+	if err := fp.Close(); err != nil {
+		os.Remove(fp.Name())
+		return "", err
+	}
+
+	return fp.Name(), nil
 }
