@@ -60,6 +60,8 @@ func UserError(err error) (int, error) {
 		switch pqErr.SQLState() {
 		case "22021": //  pq: invalid byte sequence for encoding "UTF8": 0xd5
 			code, err = 400, pqErr
+		case "23505": // pq: duplicate key value violates unique constraint "users#site_id#email" (23505)
+			code, err = 400, errors.New("an object with this name already exists")
 		}
 	case errors.As(err, &dErr): // Invalid parameters.
 		code = 400
