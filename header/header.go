@@ -11,6 +11,7 @@
 package header
 
 import (
+	"maps"
 	"net/http"
 	"strings"
 	"time"
@@ -43,7 +44,7 @@ func init() {
 	// token      = 1*<any CHAR except CTLs or separators>
 	// qdtext     = <any TEXT except <">>
 
-	for c := 0; c < 256; c++ {
+	for c := range 256 {
 		var t octetType
 		isCtl := c <= 31 || c == 127
 		isChar := 0 <= c && c <= 127
@@ -61,9 +62,7 @@ func init() {
 // Copy returns a shallow copy of the header.
 func Copy(header http.Header) http.Header {
 	h := make(http.Header)
-	for k, vs := range header {
-		h[k] = vs
-	}
+	maps.Copy(h, header)
 	return h
 }
 

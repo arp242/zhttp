@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -75,11 +76,9 @@ func RequestLog(opt *RequestLogOptions, printer RequestLogPrinter, ignore ...str
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if len(ignore) > 0 {
-				for _, i := range ignore {
-					if r.URL.Path == i {
-						next.ServeHTTP(w, r)
-						return
-					}
+				if slices.Contains(ignore, r.URL.Path) {
+					next.ServeHTTP(w, r)
+					return
 				}
 			}
 
